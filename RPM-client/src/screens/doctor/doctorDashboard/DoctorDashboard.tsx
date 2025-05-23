@@ -86,7 +86,7 @@ export default function DoctorHomeDashboard() {
   return (
     <MainLayout>
       <Container maxWidth="md">
-        <Box bgcolor="#1976d2" color="white" p={3} borderRadius={2} mt={2}>
+        <Box bgcolor="#7442BF" color="white" p={3} borderRadius={2} mt={2}>
           <Typography variant="subtitle1">Welcome</Typography>
           <Typography variant="h5" fontWeight="bold">
             Dr. {user?.firstName} {user?.lastName}

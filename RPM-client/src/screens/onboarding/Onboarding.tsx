@@ -15,7 +15,7 @@ import {
   FormLabel,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import dasionLogo from '../../assests/img/dasionlogo.png';
+import logo from '../../assests/img/logo.png';
 
 const steps = ['Business Information', 'Goals & Interests', 'Contact Details'];
 
@@ -172,12 +172,16 @@ export default function Onboarding() {
             mb: 4
           }}
         >
-          <Box component="img" src={dasionLogo} alt="dasion" sx={{ width: 40, height: 40, mr: 1 }} />
-          Dasion Smart RPM
+          <Box component="img" src={logo} alt="reversale" sx={{ width: 40, height: 40, mr: 1 }} />
+          Reversale
         </Typography>
 
         <Box width="100%" mb={4}>
-          <Stepper activeStep={activeStep}>
+          <Stepper activeStep={activeStep} sx={{
+            '& .MuiStepIcon-root.Mui-active': { color: '#7442BF' },
+            '& .MuiStepIcon-root.Mui-completed': { color: '#7442BF' },
+            '& .MuiStepConnector-line': { borderColor: '#7442BF' }
+          }}>
             {steps.map((label) => (
               <Step key={label}>
                 <StepLabel>{label}</StepLabel>
@@ -186,9 +190,9 @@ export default function Onboarding() {
           </Stepper>
         </Box>
 
-        <Box width="100%" bgcolor="#1976d2" p={3} borderRadius={2} mb={4}>
+        <Box width="100%" bgcolor="#7442BF" p={3} borderRadius={2} mb={4}>
           <Typography variant="h5" color="white" gutterBottom>
-            Welcome to Dasion Smart RPM
+            Welcome to Reversale
           </Typography>
           <Typography variant="body1" color="white">
             Let's get to know you better before we begin
@@ -207,9 +211,8 @@ export default function Onboarding() {
           </Button>
           <Button
             variant="contained"
-            color="primary"
             onClick={handleNext}
-            sx={{ borderRadius: 50, px: 5 }}
+            sx={{ borderRadius: 50, px: 5, bgcolor: '#7442BF', borderColor: '#7442BF', '&:hover': { bgcolor: '#5e3399' } }}
           >
             {activeStep === steps.length - 1 ? 'Finish' : 'Next'}
           </Button>

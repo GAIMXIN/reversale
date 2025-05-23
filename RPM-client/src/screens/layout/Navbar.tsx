@@ -5,7 +5,7 @@ import {
 } from "@mui/material";
 import { Link } from "wouter";
 import { useNavigate } from "react-router-dom"
-import dasionLogo from '../../assests/img/dasionlogo.png';
+import logo from '../../assests/img/logo.png';
 
 export function Navbar() {
   const navigate = useNavigate()
@@ -62,7 +62,7 @@ export function Navbar() {
             alignItems: "center"
           }}
         >
-         <Box component="img" src={dasionLogo} alt="dasion" sx={{ width: 40, height: 40, mr: 1 }} />           Dasion Smart RPM
+         <Box component="img" src={logo} alt="reversale" sx={{ width: 40, height: 40, mr: 1 }} />           Reversale
         </Typography>
 
 

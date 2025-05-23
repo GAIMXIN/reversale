@@ -158,7 +158,7 @@ export default function DoctorAddMeasurement() {
 
                 {type === "Blood Pressure" ? (
                     <>
-                        <Typography variant="subtitle1" sx={{ color: "#2196f3", fontWeight: "bold", mt: 2 }}>
+                        <Typography variant="subtitle1" sx={{ color: "#7442BF", fontWeight: "bold", mt: 2 }}>
                             {type}
                         </Typography>
                         <Box display="flex" gap={2} mt={1}>
@@ -194,7 +194,7 @@ export default function DoctorAddMeasurement() {
                     </>
                 ) : (
                     <>
-                        <Typography variant="subtitle1" sx={{ color: "#2196f3", fontWeight: "bold", mt: 2 }}>
+                        <Typography variant="subtitle1" sx={{ color: "#7442BF", fontWeight: "bold", mt: 2 }}>
                             {type}
                         </Typography>
                         <TextField

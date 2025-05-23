@@ -53,10 +53,10 @@ const Sidebar = () => {
                 component={NavLink}
                 to={to}
                 sx={{
-                  bgcolor: isActive ? "blue" : "transparent",
+                  bgcolor: isActive ? "#7442BF" : "transparent",
                   color: isActive ? "white" : "black",
                   borderRadius: 2,
-                  "&:hover": { bgcolor: isActive ? "blue" : "#f0f0f0" },
+                  "&:hover": { bgcolor: isActive ? "#7442BF" : "#f0f0f0" },
                 }}
               >
                 <ListItemIcon sx={{ color: isActive ? "white" : "inherit" }}>

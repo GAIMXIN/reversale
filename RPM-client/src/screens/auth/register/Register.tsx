@@ -17,7 +17,7 @@ import {
 } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
-import dasionLogo from '../../../assests/img/dasionlogo.png';
+import logo from '../../../assests/img/logo.png';
 
 export default function RegisterScreen() {
   const navigate = useNavigate();
@@ -138,12 +138,12 @@ export default function RegisterScreen() {
             alignItems: "center"
           }}
         >
-         <Box component="img" src={dasionLogo} alt="dasion" sx={{ width: 40, height: 40, mr: 1 }} /> 
-          Dasion Smart RPM
+         <Box component="img" src={logo} alt="reversale" sx={{ width: 40, height: 40, mr: 1 }} /> 
+          Reversale
         </Typography>
       </Box>
-      <Box mt={3} mb={2} bgcolor="#0d47a1" color="white" p={2} borderRadius={1}>
-        <Typography variant="h5">User Registration for Dasion Smart RPM</Typography>
+      <Box mt={3} mb={2} bgcolor="#7442BF" color="white" p={2} borderRadius={1}>
+        <Typography variant="h5">User Registration for Reversale</Typography>
       </Box>
       <form onSubmit={handleSubmit}>
         <FormControl fullWidth margin="normal" error={!!errors.role}>
@@ -245,9 +245,8 @@ export default function RegisterScreen() {
             type="submit"
             fullWidth
             variant="contained"
-            color="primary"
             disabled={loading}
-            sx={{ borderRadius: "50px", paddingY: 1.5 }}
+            sx={{ borderRadius: '50px', paddingY: 1.5, bgcolor: '#7442BF', borderColor: '#7442BF', '&:hover': { bgcolor: '#5e3399' } }}
           >
             {loading ? <CircularProgress size={24} color="inherit" /> : "Create"}
           </Button>
@@ -259,7 +258,7 @@ export default function RegisterScreen() {
           </Typography>
           <Typography
             variant="body2"
-            sx={{ cursor: "pointer", fontWeight: 600, color: "#0d47a1" }}
+            sx={{ cursor: "pointer", fontWeight: 600, color: "#7442BF" }}
             onClick={() => navigate("/")}
           >
             Login

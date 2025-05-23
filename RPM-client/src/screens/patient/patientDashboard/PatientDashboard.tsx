@@ -115,7 +115,7 @@ export default function PatientDashboard() {
     <MainLayout>
       <Container maxWidth="md" sx={{ py: 4 }}>
         <Box
-          bgcolor="#1976d2"
+          bgcolor="#7442BF"
           color="white"
           p={2}
           borderRadius={2}

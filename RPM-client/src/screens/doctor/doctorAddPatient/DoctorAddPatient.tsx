@@ -104,7 +104,7 @@ export default function DoctorAddPatients() {
   return (
     <MainLayout>
       <Container maxWidth="md" sx={{ mt: 4 }}>
-        <Box bgcolor="#1976d2" color="white" p={3} borderRadius={2} mb={3}>
+        <Box bgcolor="#7442BF" color="white" p={3} borderRadius={2} mb={3}>
           <Typography variant="h5">Add Patients</Typography>
         </Box>
 

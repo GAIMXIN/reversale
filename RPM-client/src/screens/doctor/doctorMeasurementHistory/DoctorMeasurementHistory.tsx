@@ -188,12 +188,12 @@ export default function PatientMeasurementHistory() {
                 >
                     <Button
                         variant="contained"
-                        color="primary"
                         onClick={() => {
                             navigate("/doctor-add-measurement", {
                                 state: { measurementType, patientId },
                             });
                         }}
+                        sx={{ bgcolor: '#7442BF', borderColor: '#7442BF', '&:hover': { bgcolor: '#5e3399' } }}
                     >
                         Add Measurement
                     </Button>

@@ -11,7 +11,7 @@ import {
   import { Visibility, VisibilityOff } from "@mui/icons-material";
   import { useState } from "react";
   import { useNavigate } from "react-router-dom";
-  import dasionLogo from '../../../assests/img/dasionlogo.png';
+  import logo from '../../../assests/img/logo.png';
   
   
   export default function LoginScreen() {
@@ -131,12 +131,12 @@ import {
             alignItems: "center"
           }}
         >
-         <Box component="img" src={dasionLogo} alt="dasion" sx={{ width: 40, height: 40, mr: 1 }} /> 
-          Dasion Smart RPM
+         <Box component="img" src={logo} alt="reversale" sx={{ width: 40, height: 40, mr: 1 }} /> 
+          Reversale
         </Typography>
-          <Box mt={4} bgcolor="#1976d2" p={2} width="100%">
+          <Box mt={4} bgcolor="#7442BF" p={2} width="100%">
             <Typography variant="h5" color="white">
-              Let's get you started with Dasion Smart RPM
+              Let's get you started with Reversale
             </Typography>
           </Box>
   
@@ -191,7 +191,7 @@ import {
             <Box textAlign="right" mt={1}>
               <Typography
                 variant="body2"
-                sx={{ cursor: "pointer", color: "#1976d2" }}
+                sx={{ cursor: "pointer", color: "#7442BF" }}
                 onClick={() => navigate("/unavailable")}
               >
                 Forgot Password?
@@ -202,9 +202,8 @@ import {
               <Button
                 variant="contained"
                 fullWidth
-                color="primary"
-                sx={{ borderRadius: 50, px: 5, py: 1.5 }}
                 onClick={handleLogin}
+                sx={{ borderRadius: 50, px: 5, py: 1.5, bgcolor: '#7442BF', borderColor: '#7442BF', '&:hover': { bgcolor: '#5e3399' } }}
               >
                 Login
               </Button>
@@ -214,7 +213,7 @@ import {
               <Typography variant="body2">Don't have an account?</Typography>
               <Typography
                 variant="body2"
-                sx={{ cursor: "pointer", color: "#1976d2" }}
+                sx={{ cursor: "pointer", color: "#7442BF" }}
                 onClick={() => navigate("/register")}
               >
                 Register
