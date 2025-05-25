@@ -1,75 +1,72 @@
-import React from "react";
-import { NavLink } from "react-router-dom";
+import React from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import {
   Box,
   List,
+  ListItem,
   ListItemIcon,
   ListItemText,
   Drawer,
+  Typography,
   ListItemButton,
-} from "@mui/material";
-import DashboardIcon from "@mui/icons-material/Dashboard";
-import SettingsIcon from "@mui/icons-material/Settings";
-import { useLocation } from "wouter";
-import PersonAddAlt1Icon from '@mui/icons-material/PersonAddAlt1';
+} from '@mui/material';
+import DashboardIcon from '@mui/icons-material/Dashboard';
+import BusinessIcon from '@mui/icons-material/Business';
+import LightbulbIcon from '@mui/icons-material/Lightbulb';
+import MicIcon from '@mui/icons-material/Mic';
 
-const Sidebar = () => {
-  const [location] = useLocation();
+const menuItems = [
+  { to: "/dashboard", text: "Dashboard", icon: <DashboardIcon /> },
+  { to: "/business-insights", text: "Business Insights", icon: <BusinessIcon /> },
+  { to: "/personalized-products", text: "Solutions", icon: <LightbulbIcon /> },
+  { to: "/voice-input", text: "Voice Input", icon: <MicIcon /> },
+];
 
-  const doctorMenu = [
-    { to: "/doctor-dashboard", text: "Dashboard", icon: <DashboardIcon /> },
-    { to: "/doctor-addpatient", text: "Add Patient", icon: <PersonAddAlt1Icon /> },
-    { to: "/provider/user_setting", text: "User Settings", icon: <SettingsIcon /> },
-  ];
-
-  const patientMenu = [
-    { to: "/patient-dashboard", text: "Dashboard", icon: <DashboardIcon /> },
-  ];
-
-  const role = localStorage.getItem("role");
-  const menuItems = role === "doctor" ? doctorMenu : patientMenu;
+export default function Sidebar() {
+  const location = useLocation();
 
   return (
     <Drawer
       variant="permanent"
       sx={{
-        width: 100,
+        width: 240,
         flexShrink: 0,
-        "& .MuiDrawer-paper": {
-          mt: 9,
+        '& .MuiDrawer-paper': {
+          width: 240,
+          boxSizing: 'border-box',
+          backgroundColor: '#f5f5f5',
         },
       }}
     >
-      <Box
-        className="left_sidemenu"
-        sx={{ width: 250, bgcolor: "background.paper", height: "100vh", padding: 2 }}
-      >
-        <List component="nav" className="sidemenu_list">
-          {menuItems.map(({ to, text, icon }) => {
-            const isActive = location === to;
-            return (
+      <Box sx={{ overflow: 'auto', mt: 8 }}>
+        <List>
+          {menuItems.map((item) => (
+            <ListItem key={item.text} disablePadding>
               <ListItemButton
-                key={to}
-                component={NavLink}
-                to={to}
+                component={Link}
+                to={item.to}
+                selected={location.pathname === item.to}
                 sx={{
-                  bgcolor: isActive ? "#7442BF" : "transparent",
-                  color: isActive ? "white" : "black",
-                  borderRadius: 2,
-                  "&:hover": { bgcolor: isActive ? "#7442BF" : "#f0f0f0" },
+                  '&.Mui-selected': {
+                    backgroundColor: 'rgba(116, 66, 191, 0.1)',
+                    '&:hover': {
+                      backgroundColor: 'rgba(116, 66, 191, 0.2)',
+                    },
+                  },
                 }}
               >
-                <ListItemIcon sx={{ color: isActive ? "white" : "inherit" }}>
-                  {icon}
+                <ListItemIcon sx={{ color: location.pathname === item.to ? '#7442BF' : 'inherit' }}>
+                  {item.icon}
                 </ListItemIcon>
-                <ListItemText primary={text} />
+                <ListItemText 
+                  primary={item.text}
+                  sx={{ color: location.pathname === item.to ? '#7442BF' : 'inherit' }}
+                />
               </ListItemButton>
-            );
-          })}
+            </ListItem>
+          ))}
         </List>
       </Box>
     </Drawer>
   );
-};
-
-export default Sidebar;
+}

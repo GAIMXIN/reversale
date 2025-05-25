@@ -6,12 +6,15 @@ import {
     Typography,
     InputAdornment,
     IconButton,
-    Link
+    Link,
+    Paper,
+    Alert
   } from "@mui/material";
   import { Visibility, VisibilityOff } from "@mui/icons-material";
   import { useState } from "react";
   import { useNavigate } from "react-router-dom";
   import logo from '../../../assests/img/logo.png';
+  import { useAuth } from '../../../contexts/AuthContext';
   
   
   export default function LoginScreen() {
@@ -19,8 +22,10 @@ import {
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
     const [errors, setErrors] = useState({ email: "", password: "" });
+    const [error, setError] = useState('');
   
     const navigate = useNavigate();
+    const { login } = useAuth();
 
     const API_BASE_URL = "http://localhost:2000/api/v1";
 
@@ -49,178 +54,150 @@ import {
       return valid;
     };
   
-    const handleLogin = async () => {
+    const handleSubmit = async (e: React.FormEvent) => {
+      e.preventDefault();
+      setError('');
+
       if (!validate()) return;
-    
+
       try {
-        // 无认证登录代码
-        const mockResponse = {
-          success: true,
-          message: "Login successful",
-          data: {
-            token: "mock-token-123",
-            role: email.includes("doctor") ? "doctor" : "patient",
-            id: 1,
-            first: "John",
-            last: "Doe",
-            email: email
-          }
-        };
-
-        const result = mockResponse;
-
-        /* 原有认证代码
-        const response = await fetch(`${API_BASE_URL}/auth/login`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({ email, password })
-        });
-    
-        const result = await response.json();
-        */
-    
-        if (!result.success) {
-          throw new Error(result.message || "Login failed");
+        // 模拟登录验证
+        if (email === "test@example.com" && password === "123456") {
+          // 模拟成功登录，生成一个假的 token
+          const fakeToken = "fake-jwt-token-" + Math.random().toString(36).substring(7);
+          login(fakeToken);
+          navigate('/dashboard');
+        } else {
+          throw new Error('Invalid credentials');
         }
-    
-        const { token, role, id, first, last, email: userEmail } = result.data;
-    
-        // Save to localStorage
-        localStorage.setItem("accessToken", token);
-        localStorage.setItem("user", JSON.stringify({
-          id,
-          firstName: first,
-          lastName: last,
-          email: userEmail,
-          role
-        }));
-        localStorage.setItem("role", role);
-    
-        // Navigate based on role
-        switch (role) {
-          case "doctor":
-            navigate("/doctor-dashboard");
-            break;
-          case "patient":
-            navigate("/patient-dashboard");
-            break;
-          default:
-            throw new Error("Unauthorized role. Please contact support.");
-        }
-      } catch (error: any) {
-        alert(error.message);
-        console.error("Login error:", error);
+      } catch (err) {
+        setError('Invalid email or password');
       }
     };
     
     
     
     return (
-      <Container maxWidth="sm">
-        <Box display="flex" flexDirection="column" alignItems="center" mt={5}>
-          <Typography
-          variant="h6"
-          component={Link}
-          href="/"
-          sx={{
-            textDecoration: "none",
-            color: "inherit",
-            display: "flex",
-            alignItems: "center"
-          }}
-        >
-         <Box component="img" src={logo} alt="reversale" sx={{ width: 40, height: 40, mr: 1 }} /> 
-          Reversale
-        </Typography>
-          <Box mt={4} bgcolor="#7442BF" p={2} width="100%">
-            <Typography variant="h5" color="white">
-              Let's get you started with Reversale
-            </Typography>
-          </Box>
-  
-          <Box component="form" mt={4} width="100%">
-            <Typography variant="subtitle1" gutterBottom>
-              Email Address *
-            </Typography>
-            <TextField
-              fullWidth
-              variant="outlined"
-              value={email}
-              onChange={(e) => {
-                setEmail(e.target.value);
-                if (errors.email) {
-                  setErrors((prev) => ({ ...prev, email: "" }));
-                }
-              }}
+      <Container maxWidth="sm" sx={{ mt: 8 }}>
+        <Paper sx={{ p: 4 }}>
+          <Box display="flex" flexDirection="column" alignItems="center" mt={5}>
+            <Box display="flex" alignItems="center" mb={4}>
+              <Box 
+                component="img" 
+                src={logo} 
+                alt="reversale" 
+                sx={{ 
+                  width: 48, 
+                  height: 48, 
+                  mr: 2,
+                  filter: 'drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.1))'
+                }} 
+              />
+              <Typography
+                variant="h4"
+                component="div"
+                sx={{
+                  fontWeight: 600,
+                  background: 'linear-gradient(45deg, #7442BF 30%, #9C27B0 90%)',
+                  backgroundClip: 'text',
+                  textFillColor: 'transparent',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  letterSpacing: '0.5px'
+                }}
+              >
+                Reversale
+              </Typography>
+            </Box>
+
+            <Box component="form" onSubmit={handleSubmit} mt={4} width="100%">
+              {error && (
+                <Alert severity="error" sx={{ mb: 2 }}>
+                  {error}
+                </Alert>
+              )}
               
-              placeholder="Enter your email"
-              error={!!errors.email}
-              helperText={errors.email}
-            />
-  
-            <Typography variant="subtitle1" mt={3} gutterBottom>
-              Password *
-            </Typography>
-            <TextField
-              fullWidth
-              variant="outlined"
-              type={showPassword ? "text" : "password"}
-              value={password}
-              onChange={(e) => {
-                setPassword(e.target.value);
-                if (errors.password) {
-                  setErrors((prev) => ({ ...prev, password: "" }));
-                }
-              }}
-              placeholder="Enter your password"
-              error={!!errors.password}
-              helperText={errors.password}
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton onClick={() => setShowPassword(!showPassword)}>
-                      {showPassword ? <VisibilityOff /> : <Visibility />}
-                    </IconButton>
-                  </InputAdornment>
-                )
-              }}
-            />
-  
-            <Box textAlign="right" mt={1}>
-              <Typography
-                variant="body2"
-                sx={{ cursor: "pointer", color: "#7442BF" }}
-                onClick={() => navigate("/unavailable")}
-              >
-                Forgot Password?
+              <Typography variant="subtitle1" gutterBottom>
+                Email Address *
               </Typography>
-            </Box>
-  
-            <Box textAlign="center" mt={4}>
-              <Button
-                variant="contained"
+              <TextField
                 fullWidth
-                onClick={handleLogin}
-                sx={{ borderRadius: 50, px: 5, py: 1.5, bgcolor: '#7442BF', borderColor: '#7442BF', '&:hover': { bgcolor: '#5e3399' } }}
-              >
-                Login
-              </Button>
-            </Box>
-  
-            <Box textAlign="center" mt={3}>
-              <Typography variant="body2">Don't have an account?</Typography>
-              <Typography
-                variant="body2"
-                sx={{ cursor: "pointer", color: "#7442BF" }}
-                onClick={() => navigate("/register")}
-              >
-                Register
+                variant="outlined"
+                value={email}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  if (errors.email) {
+                    setErrors((prev) => ({ ...prev, email: "" }));
+                  }
+                }}
+                
+                placeholder="Enter your email"
+                error={!!errors.email}
+                helperText={errors.email}
+              />
+    
+              <Typography variant="subtitle1" mt={3} gutterBottom>
+                Password *
               </Typography>
+              <TextField
+                fullWidth
+                variant="outlined"
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  if (errors.password) {
+                    setErrors((prev) => ({ ...prev, password: "" }));
+                  }
+                }}
+                placeholder="Enter your password"
+                error={!!errors.password}
+                helperText={errors.password}
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton onClick={() => setShowPassword(!showPassword)}>
+                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                  )
+                }}
+              />
+    
+              <Box textAlign="right" mt={1}>
+                <Typography
+                  variant="body2"
+                  sx={{ cursor: "pointer", color: "#7442BF" }}
+                  onClick={() => navigate("/unavailable")}
+                >
+                  Forgot Password?
+                </Typography>
+              </Box>
+    
+              <Box textAlign="center" mt={4}>
+                <Button
+                  variant="contained"
+                  fullWidth
+                  type="submit"
+                  sx={{ borderRadius: 50, px: 5, py: 1.5, bgcolor: '#7442BF', borderColor: '#7442BF', '&:hover': { bgcolor: '#5e3399' } }}
+                >
+                  Login
+                </Button>
+              </Box>
+    
+              <Box textAlign="center" mt={3}>
+                <Typography variant="body2">Don't have an account?</Typography>
+                <Typography
+                  variant="body2"
+                  sx={{ cursor: "pointer", color: "#7442BF" }}
+                  onClick={() => navigate("/register")}
+                >
+                  Register
+                </Typography>
+              </Box>
             </Box>
           </Box>
-        </Box>
+        </Paper>
       </Container>
     );
   }
