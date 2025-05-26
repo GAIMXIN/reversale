@@ -19,7 +19,8 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(!!localStorage.getItem('token'));
+  // 暂时设置为false，让应用从未登录状态开始
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
 
   const login = (token: string) => {
     localStorage.setItem('token', token);

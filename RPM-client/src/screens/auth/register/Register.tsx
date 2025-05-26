@@ -480,7 +480,7 @@ const Register: React.FC = () => {
             <Box 
               component="img" 
               src={logo} 
-              alt="reversale" 
+              alt="reverssale" 
               sx={{ 
                 width: 48, 
                 height: 48, 
@@ -498,10 +498,31 @@ const Register: React.FC = () => {
                 textFillColor: 'transparent',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
-                letterSpacing: '0.5px'
+                letterSpacing: '0.5px',
+                '& .special-s': {
+                  background: 'linear-gradient(45deg, #FFD700 0%, #FFA500 30%, #FF6B6B 60%, #7442BF 100%)',
+                  backgroundClip: 'text',
+                  WebkitBackgroundClip: 'text',
+                  textFillColor: 'transparent',
+                  WebkitTextFillColor: 'transparent',
+                  display: 'inline-block',
+                  fontWeight: 800,
+                  fontSize: '1.1em',
+                  animation: 'shimmer 2s ease-in-out infinite alternate',
+                  filter: 'drop-shadow(0 0 8px rgba(255, 215, 0, 0.4))',
+                  transform: 'scale(1.05)',
+                  '@keyframes shimmer': {
+                    '0%': {
+                      filter: 'drop-shadow(0 0 8px rgba(255, 215, 0, 0.4)) brightness(1)',
+                    },
+                    '100%': {
+                      filter: 'drop-shadow(0 0 12px rgba(255, 107, 107, 0.6)) brightness(1.2)',
+                    }
+                  }
+                }
               }}
             >
-              Reversale
+              Rever<span className="special-s">S</span><span className="special-s">S</span>ale
             </Typography>
           </Box>
 
