@@ -18,7 +18,6 @@ import {
   Mic as MicIcon, 
   MicOff as MicOffIcon, 
   Keyboard as KeyboardIcon,
-  ArrowBack,
   Restaurant,
   LocalHospital,
   Store,
@@ -226,56 +225,49 @@ What specific aspect of your client consultation can I help you with today?`;
   const selectedFieldName = user?.selectedField ? fieldNames[user.selectedField] : '';
 
   return (
-    <Box sx={{ 
-      height: '100vh', 
-      display: 'flex', 
-      flexDirection: 'column',
-      bgcolor: '#f8f9fa'
-    }}>
-      {/* Header */}
-      <Paper sx={{ 
-        p: 2, 
-        borderRadius: 0,
-        borderBottom: '1px solid #e0e0e0',
-        background: 'linear-gradient(135deg, #7442BF 0%, #9C27B0 100%)',
-        color: 'white'
+    <Container 
+      maxWidth={false} 
+      sx={{ 
+        height: '100vh', 
+        display: 'flex', 
+        flexDirection: 'column',
+        p: 0,
+        bgcolor: '#f8f9fa'
+      }}
+    >
+      {/* Logo and Field Info - Minimal Header */}
+      <Box sx={{ 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'center',
+        p: 2,
+        bgcolor: 'white',
+        borderBottom: '1px solid #e0e0e0'
       }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <IconButton 
-            onClick={() => navigate('/salesman-dashboard')}
-            sx={{ color: 'white' }}
-          >
-            <ArrowBack />
-          </IconButton>
-          <Box 
-            component="img" 
-            src={logo} 
-            alt="reverssale" 
-            sx={{ width: 32, height: 32 }} 
-          />
-          <Box sx={{ flex: 1 }}>
-            <Typography variant="h6" sx={{ fontWeight: 600 }}>
-              AI Consultation Assistant
-            </Typography>
-            {selectedFieldIcon && (
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.5 }}>
-                {React.createElement(selectedFieldIcon, { sx: { fontSize: 16 } })}
-                <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                  {selectedFieldName}
-                </Typography>
-              </Box>
-            )}
+        <Box 
+          component="img" 
+          src={logo} 
+          alt="reverssale" 
+          sx={{ width: 32, height: 32, mr: 2 }} 
+        />
+        <Typography variant="h6" sx={{ fontWeight: 600, color: '#7442BF' }}>
+          AI Consultation Assistant
+        </Typography>
+        {selectedFieldIcon && (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, ml: 2 }}>
+            {React.createElement(selectedFieldIcon, { sx: { fontSize: 20, color: '#7442BF' } })}
+            <Chip 
+              label={selectedFieldName}
+              size="small"
+              sx={{ 
+                bgcolor: '#7442BF',
+                color: 'white',
+                fontWeight: 500
+              }}
+            />
           </Box>
-          <Chip 
-            label="Salesman Mode"
-            sx={{ 
-              bgcolor: 'rgba(255,255,255,0.2)',
-              color: 'white',
-              fontWeight: 600
-            }}
-          />
-        </Box>
-      </Paper>
+        )}
+      </Box>
 
       {/* Messages */}
       <Box sx={{ 
@@ -408,7 +400,7 @@ What specific aspect of your client consultation can I help you with today?`;
           )}
         </Box>
       </Paper>
-    </Box>
+    </Container>
   );
 };
 
