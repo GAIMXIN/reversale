@@ -58,6 +58,10 @@ export default function ChatScreen({ isAuthenticated = false }: ChatScreenProps)
       '3': [
         { role: 'user', content: 'I\'m starting a tech company, what should I focus on?' },
         { role: 'assistant', content: 'For your tech business, here\'s my comprehensive analysis:\n\n🎯 **Detailed Pain Point Analysis:**\n• User acquisition and retention challenges\n• Product-market fit validation requirements\n• Scaling technical infrastructure efficiently\n• Competitive differentiation strategies' }
+      ],
+      '4': [
+        { role: 'user', content: 'My husband is a doctor and always brings SOAP notes home to work on evenings. This is affecting our family time. Is there any solution?' },
+        { role: 'assistant', content: '🏥 **Medical Practice Analysis - A Real Case Study:**\n\n**The Problem:** A doctor\'s wife recently shared with our platform: *"My husband always comes home late and brings his work of writing SOAP notes to home to work during evenings."*\n\n🎯 **Healthcare Industry Pain Points:**\n• Physicians spend 2-3 hours daily on documentation outside patient care\n• SOAP notes and medical records consume 35-40% of a doctor\'s time\n• Administrative burden leads to physician burnout (affecting 50% of doctors)\n• Work-life balance severely impacted by after-hours documentation\n\n💡 **Dasion\'s Solution - NuroScript Ambient Dictation Tool:**\n• **Auto-generates SOAP notes** during patient consultations\n• **Real-time transcription** and medical terminology recognition\n• **Structured documentation** that integrates with EMR systems\n• **Voice-activated workflow** - no typing required\n\n📊 **Expected Results with NuroScript:**\n• **60-70% reduction** in documentation time\n• **2-3 hours saved daily** - no more taking work home\n• **Improved work-life balance** for healthcare providers\n• **Enhanced patient interaction** (more eye contact, less screen time)\n• **Reduced physician burnout** and stress levels\n\n🎥 **Next Steps:**\nWe\'ll present a video demonstration of how NuroScript works and let you try it to see how it would solve this exact pain point. The tool learns medical terminology and can generate complete SOAP notes from natural conversation.\n\n**Ready to see how this could transform your practice and bring back your evenings?**' }
       ]
     };
     
@@ -124,6 +128,38 @@ I can connect you with verified specialists who have achieved these results for 
 
 🚀 **Next Steps:**
 I can provide detailed implementation roadmaps and connect you with specialists who have successfully executed these strategies. What's your primary focus area?`;
+        } else if (userInput.includes('medical') || userInput.includes('doctor') || userInput.includes('healthcare') || userInput.includes('clinic') || userInput.includes('soap') || userInput.includes('patient') || userInput.includes('physician') || userInput.includes('hospital') || userInput.includes('wife') || userInput.includes('husband') || userInput.includes('notes') || userInput.includes('documentation') || userInput.includes('evening') || userInput.includes('home late') || userInput.includes('work from home') || userInput.includes('family time')) {
+          aiResponse = `🏥 **Healthcare Practice Analysis - Real Case Study:**
+
+I understand the challenges in medical practice! A doctor's wife recently told us: *"My husband always comes home late and brings his work of writing SOAP notes to home to work during evenings."*
+
+🎯 **Common Healthcare Pain Points:**
+• Excessive documentation time (2-3 hours daily)
+• SOAP notes taking time away from family
+• Administrative burden and physician burnout
+• Work-life balance challenges
+
+💡 **Preview of Our Solution - NuroScript:**
+• Ambient dictation technology that auto-generates SOAP notes
+• Real-time transcription during patient consultations
+• 60-70% reduction in documentation time
+• Physicians get their evenings back with family
+
+💡 **Potential Solutions I Can Connect You With:**
+• **Dr. Sarah Mitchell** - Healthcare Workflow Optimization Specialist
+• **TechMed Solutions** - Medical Documentation Automation
+• **NuroScript Team** - Ambient Dictation Technology Experts
+• **Dr. James Chen** - Physician Burnout Prevention Consultant
+
+🔐 **Want to see the FULL NuroScript demo and solve this exact problem?**
+**👉 PLEASE LOGIN** to access:
+• Live interactive demo of ambient dictation technology
+• Complete case studies showing 60-70% documentation time reduction
+• Direct contact with healthcare technology specialists
+• Video testimonials from physicians who got their evenings back
+• Free trial of NuroScript for your practice
+
+**🚀 Ready to transform your practice and reclaim your personal time? LOGIN NOW to get started!**`;
         } else {
           // Generic helpful response for authenticated users
           aiResponse = `I'm here to provide comprehensive business analysis and solutions without any restrictions!
@@ -186,6 +222,31 @@ Would you like me to provide more specific advice about your e-commerce challeng
 **Login** to access their profiles, case studies, and book consultations. These professionals have helped similar businesses increase efficiency by 30-40%!
 
 Which area would you like to focus on first?`;
+        } else if (userInput.includes('medical') || userInput.includes('doctor') || userInput.includes('healthcare') || userInput.includes('clinic') || userInput.includes('soap') || userInput.includes('patient') || userInput.includes('physician') || userInput.includes('hospital')) {
+          aiResponse = `🏥 **Healthcare Practice Analysis:**
+
+I understand the challenges in medical practice! A doctor's wife recently told us: *"My husband always comes home late and brings his work of writing SOAP notes to home to work during evenings."*
+
+🎯 **Common Healthcare Pain Points:**
+• Excessive documentation time (2-3 hours daily)
+• SOAP notes taking time away from family
+• Administrative burden and physician burnout
+• Work-life balance challenges
+
+💡 **Potential Solutions I Can Connect You With:**
+• **Dr. Sarah Mitchell** - Healthcare Workflow Optimization Specialist
+• **TechMed Solutions** - Medical Documentation Automation
+• **NuroScript Team** - Ambient Dictation Technology Experts
+• **Dr. James Chen** - Physician Burnout Prevention Consultant
+
+🔐 **Want to see how NuroScript can solve this exact problem?**
+**Login** to access:
+• Live demo of ambient dictation technology
+• Case studies showing 60-70% documentation time reduction
+• Direct contact with healthcare technology specialists
+• Video testimonials from physicians who got their evenings back
+
+**Ready to transform your practice and reclaim your personal time?**`;
         } else if (userInput.includes('tech') || userInput.includes('software') || userInput.includes('app') || userInput.includes('saas')) {
           aiResponse = `For your tech business, I've analyzed these critical pain points:
 
@@ -417,7 +478,7 @@ What industry or business challenge would you like to discuss?`;
               }
             }}
           >
-            {isRecording ? '🎤 Recording... Click to stop' : '🎤 Click to start voice conversation'}
+            {isRecording ? 'Recording... Click to stop' : '🎤 Click to start voice conversation'}
           </Typography>
           
           <Typography 

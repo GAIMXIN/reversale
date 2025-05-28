@@ -61,17 +61,34 @@ import {
       if (!validate()) return;
 
       try {
-        // 模拟登录验证
+        // 模拟登录验证 - 支持不同类型的账号
         if (email === "test@example.com" && password === "123456") {
-          // 模拟成功登录，生成一个假的 token
+          // test用户登录
           const fakeToken = "fake-jwt-token-" + Math.random().toString(36).substring(7);
-          login(fakeToken);
+          const testUser = {
+            id: "test-user-1",
+            email: email,
+            userType: 'test' as const,
+            name: "Test User"
+          };
+          login(fakeToken, testUser);
           navigate('/');
+        } else if (email === "salesman@example.com" && password === "123456") {
+          // salesman用户登录
+          const fakeToken = "fake-jwt-token-" + Math.random().toString(36).substring(7);
+          const salesmanUser = {
+            id: "salesman-user-1",
+            email: email,
+            userType: 'salesman' as const,
+            name: "Sales Representative"
+          };
+          login(fakeToken, salesmanUser);
+          navigate('/salesman-dashboard');
         } else {
           throw new Error('Invalid credentials');
         }
       } catch (err) {
-        setError('Invalid email or password');
+        setError('Invalid email or password. Try test@example.com or salesman@example.com with password 123456');
       }
     };
     

@@ -22,7 +22,6 @@ import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import GroupIcon from '@mui/icons-material/Group';
 import TimelineIcon from '@mui/icons-material/Timeline';
 import AssessmentIcon from '@mui/icons-material/Assessment';
-import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 
 interface BusinessData {
   businessName: string;
@@ -41,6 +40,7 @@ interface Insight {
   revenueSource?: string[];
   monthlyRevenue?: number;
   yearlyRevenue?: number;
+  successProbability?: number;
 }
 
 interface GrowthProjection {
@@ -52,6 +52,8 @@ interface GrowthProjection {
   timeframe: string;
   confidence: number;
   revenueSources: string[];
+  icon: string;
+  color: string;
 }
 
 export default function BusinessInsights() {
@@ -65,83 +67,57 @@ export default function BusinessInsights() {
     {
       type: 'suggestion',
       title: 'Digital Marketing Automation',
-      description: 'Implement AI-powered marketing automation to reach targeted audiences and improve conversion rates.',
-      revenueIncrease: '+40%',
-      customerIncrease: '+60%',
+      description: 'Implement AI-powered marketing automation to reach targeted audiences and improve conversion rates through personalized campaigns.',
+      revenueIncrease: '+$20,000',
+      customerIncrease: '+300 customers',
       timeframe: '6 months',
       priority: 'high',
-      monthlyRevenue: 8000,
-      yearlyRevenue: 96000,
+      monthlyRevenue: 20000,
+      yearlyRevenue: 240000,
+      successProbability: 85,
       revenueSource: [
-        'New customer acquisition: +$4,500/month',
-        'Conversion rate improvement: +$2,200/month', 
-        'Customer lifetime value increase: +$1,300/month'
+        'Online advertising optimization: +$8,500/month',
+        'SEO traffic generation: +$6,200/month', 
+        'Social media marketing: +$3,800/month',
+        'Content marketing ROI: +$1,500/month'
       ]
     },
     {
       type: 'suggestion',
       title: 'Extended Operating Hours',
-      description: 'Extending business hours could capture evening and weekend customers, increasing accessibility.',
-      revenueIncrease: '+22%',
-      customerIncrease: '+35%',
-      timeframe: '2 months',
+      description: 'Extending business hours to capture evening and weekend customers, increasing market accessibility and service availability.',
+      revenueIncrease: '+$11,000',
+      customerIncrease: '+175 customers',
+      timeframe: '3 months',
       priority: 'high',
-      monthlyRevenue: 5500,
-      yearlyRevenue: 66000,
+      monthlyRevenue: 11000,
+      yearlyRevenue: 132000,
+      successProbability: 92,
       revenueSource: [
-        'Evening operating hours: +$2,800/month',
-        'Weekend services: +$2,000/month',
-        'Overtime service fees: +$700/month'
+        'Evening services: +$5,800/month',
+        'Weekend operations: +$3,200/month',
+        'Holiday special services: +$1,500/month',
+        'Express service fees: +$500/month'
       ]
     },
     {
       type: 'suggestion',
       title: 'Customer Loyalty Program',
-      description: 'Develop a comprehensive loyalty program to increase customer retention and repeat purchases.',
-      revenueIncrease: '+18%',
-      customerIncrease: '+12%',
+      description: 'Develop a comprehensive loyalty program to increase customer retention, repeat purchases, and referral generation.',
+      revenueIncrease: '+$9,000',
+      customerIncrease: '+60 customers',
       timeframe: '4 months',
       priority: 'medium',
-      monthlyRevenue: 4500,
-      yearlyRevenue: 54000,
+      monthlyRevenue: 9000,
+      yearlyRevenue: 108000,
+      successProbability: 78,
       revenueSource: [
-        'Increased repeat purchases: +$2,500/month',
-        'Premium membership services: +$1,200/month',
-        'Referral rewards bringing new customers: +$800/month'
+        'Membership renewals: +$4,200/month',
+        'Referral rewards: +$2,800/month',
+        'Points redemption boost: +$1,500/month',
+        'Member exclusive services: +$500/month'
       ]
-    },
-    {
-      type: 'suggestion',
-      title: 'Mobile App Development',
-      description: 'Create a mobile app to improve customer engagement, accessibility and enable new revenue streams.',
-      revenueIncrease: '+28%',
-      customerIncrease: '+45%',
-      timeframe: '8 months',
-      priority: 'medium',
-      monthlyRevenue: 7000,
-      yearlyRevenue: 84000,
-      revenueSource: [
-        'Mobile order growth: +$3,500/month',
-        'In-app purchases: +$2,000/month',
-        'Mobile advertising revenue: +$1,500/month'
-      ]
-    },
-    {
-      type: 'positive',
-      title: 'Strong Online Presence',
-      description: 'Your business has excellent online visibility with 4.8/5 customer ratings, providing a solid foundation for growth.',
-      revenueIncrease: '+15%',
-      customerIncrease: '+25%',
-      timeframe: '3 months',
-      priority: 'medium',
-      monthlyRevenue: 3750,
-      yearlyRevenue: 45000,
-      revenueSource: [
-        'SEO traffic generation: +$2,000/month',
-        'Online reviews conversion boost: +$1,200/month',
-        'Social media marketing: +$550/month'
-      ]
-    },
+    }
   ]);
 
   const [growthProjections] = useState<GrowthProjection[]>([
@@ -153,7 +129,9 @@ export default function BusinessInsights() {
       projectedCustomers: 800,
       timeframe: '6 months',
       confidence: 85,
-      revenueSources: ['Online advertising', 'SEO optimization', 'Social media marketing', 'Content marketing']
+      revenueSources: ['Online advertising', 'SEO optimization', 'Social media marketing', 'Content marketing'],
+      icon: '📱',
+      color: '#7442BF'
     },
     {
       category: 'Extended Hours',
@@ -163,7 +141,9 @@ export default function BusinessInsights() {
       projectedCustomers: 675,
       timeframe: '3 months',
       confidence: 92,
-      revenueSources: ['Evening services', 'Weekend operations', 'Holiday special services', 'Express service fees']
+      revenueSources: ['Evening services', 'Weekend operations', 'Holiday special services', 'Express service fees'],
+      icon: '⏰',
+      color: '#2196F3'
     },
     {
       category: 'Loyalty Program',
@@ -173,7 +153,9 @@ export default function BusinessInsights() {
       projectedCustomers: 560,
       timeframe: '4 months',
       confidence: 78,
-      revenueSources: ['Membership renewals', 'Points redemption', 'Referral rewards', 'Member exclusive services']
+      revenueSources: ['Membership renewals', 'Points redemption', 'Referral rewards', 'Member exclusive services'],
+      icon: '🎯',
+      color: '#FF9800'
     }
   ]);
 
@@ -251,13 +233,25 @@ export default function BusinessInsights() {
           {growthProjections.map((projection, index) => (
             <Card key={index} sx={{ 
               height: '100%',
-              background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
-              border: '1px solid #dee2e6'
+              background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
+              border: '2px solid #e9ecef',
+              borderRadius: 3,
+              transition: 'all 0.3s ease',
+              '&:hover': {
+                transform: 'translateY(-4px)',
+                boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
+                borderColor: projection.color
+              }
             }}>
               <CardContent>
-                <Typography variant="h6" gutterBottom color="primary">
-                  {projection.category}
-                </Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                  <Typography variant="h4" sx={{ fontSize: '2rem' }}>
+                    {projection.icon}
+                  </Typography>
+                  <Typography variant="h6" gutterBottom sx={{ color: projection.color, fontWeight: 600 }}>
+                    {projection.category}
+                  </Typography>
+                </Box>
                 
                 <Box sx={{ mb: 2 }}>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
@@ -268,7 +262,7 @@ export default function BusinessInsights() {
                       {formatCurrency(projection.currentRevenue)} → {formatCurrency(projection.projectedRevenue)}
                     </Typography>
                   </Box>
-                  <Typography variant="h6" color="success.main" sx={{ textAlign: 'center', mb: 1 }}>
+                  <Typography variant="h5" sx={{ color: projection.color, textAlign: 'center', mb: 1, fontWeight: 700 }}>
                     +{formatCurrency(projection.projectedRevenue - projection.currentRevenue)}
                   </Typography>
                 </Box>
@@ -296,7 +290,13 @@ export default function BusinessInsights() {
                       key={idx}
                       label={source}
                       size="small"
-                      sx={{ mr: 0.5, mb: 0.5 }}
+                      sx={{ 
+                        mr: 0.5, 
+                        mb: 0.5,
+                        bgcolor: `${projection.color}15`,
+                        color: projection.color,
+                        border: `1px solid ${projection.color}30`
+                      }}
                       variant="outlined"
                     />
                   ))}
@@ -310,14 +310,14 @@ export default function BusinessInsights() {
                     variant="determinate" 
                     value={projection.confidence}
                     sx={{ 
-                      height: 8,
-                      borderRadius: 4,
+                      height: 10,
+                      borderRadius: 5,
                       bgcolor: 'grey.200',
                       '& .MuiLinearProgress-bar': {
                         background: projection.confidence >= 80 
-                          ? 'linear-gradient(90deg, #4caf50, #8bc34a)'
-                          : 'linear-gradient(90deg, #ff9800, #ffc107)',
-                        borderRadius: 4
+                          ? `linear-gradient(90deg, ${projection.color}, ${projection.color}CC)`
+                          : `linear-gradient(90deg, #ff9800, #ffc107)`,
+                        borderRadius: 5
                       }
                     }}
                   />
@@ -326,8 +326,11 @@ export default function BusinessInsights() {
                 <Chip 
                   label={`Timeline: ${projection.timeframe}`}
                   size="small"
-                  color="primary"
-                  variant="filled"
+                  sx={{ 
+                    bgcolor: projection.color,
+                    color: 'white',
+                    fontWeight: 600
+                  }}
                 />
               </CardContent>
             </Card>
@@ -368,6 +371,17 @@ export default function BusinessInsights() {
                           variant="outlined"
                         />
                       )}
+                      {insight.successProbability && (
+                        <Chip 
+                          label={`${insight.successProbability}% success rate`}
+                          size="small"
+                          sx={{ 
+                            bgcolor: insight.successProbability >= 80 ? '#4caf50' : '#ff9800',
+                            color: 'white',
+                            fontWeight: 600
+                          }}
+                        />
+                      )}
                     </Box>
                   }
                   secondary={
@@ -404,7 +418,7 @@ export default function BusinessInsights() {
                               </Typography>
                               {insight.monthlyRevenue && (
                                 <Typography variant="caption">
-                                  +${insight.monthlyRevenue}/month
+                                  +${insight.monthlyRevenue.toLocaleString()}/month
                                 </Typography>
                               )}
                             </Box>
@@ -455,6 +469,32 @@ export default function BusinessInsights() {
                           </Box>
                         )}
                       </Box>
+
+                      {/* Success Probability Bar */}
+                      {insight.successProbability && (
+                        <Box sx={{ mt: 2, mb: 2 }}>
+                          <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                            Success Probability: {insight.successProbability}%
+                          </Typography>
+                          <LinearProgress 
+                            variant="determinate" 
+                            value={insight.successProbability}
+                            sx={{ 
+                              height: 10,
+                              borderRadius: 5,
+                              bgcolor: 'grey.200',
+                              '& .MuiLinearProgress-bar': {
+                                background: insight.successProbability >= 80 
+                                  ? 'linear-gradient(90deg, #4caf50, #8bc34a)'
+                                  : insight.successProbability >= 60
+                                  ? 'linear-gradient(90deg, #ff9800, #ffc107)'
+                                  : 'linear-gradient(90deg, #f44336, #ff5722)',
+                                borderRadius: 5
+                              }
+                            }}
+                          />
+                        </Box>
+                      )}
 
                       {/* Revenue Sources */}
                       {insight.revenueSource && (

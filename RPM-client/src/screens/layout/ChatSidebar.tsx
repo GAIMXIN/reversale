@@ -46,7 +46,7 @@ const menuItems = [
 export default function ChatSidebar({ collapsed, onToggle }: ChatSidebarProps) {
   const location = useLocation();
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const [chatHistory, setChatHistory] = useState<ChatHistory[]>([]);
 
   // 模拟聊天历史数据
@@ -101,6 +101,11 @@ export default function ChatSidebar({ collapsed, onToggle }: ChatSidebarProps) {
       return `${days}d ago`;
     }
   };
+
+  // 如果是salesman用户，不显示侧边栏
+  if (user?.userType === 'salesman') {
+    return null;
+  }
 
   return (
     <Drawer
