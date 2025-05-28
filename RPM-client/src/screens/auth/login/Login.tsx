@@ -98,56 +98,6 @@ import {
       <Container maxWidth="sm" sx={{ mt: 8 }}>
         <Paper sx={{ p: 4 }}>
           <Box display="flex" flexDirection="column" alignItems="center" mt={5}>
-            <Box display="flex" alignItems="center" mb={4}>
-              <Box 
-                component="img" 
-                src={logo} 
-                alt="reverssale" 
-                sx={{ 
-                  width: 48, 
-                  height: 48, 
-                  mr: 2,
-                  filter: 'drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.1))'
-                }} 
-              />
-              <Typography
-                variant="h4"
-                component="div"
-                sx={{
-                  fontWeight: 600,
-                  background: 'linear-gradient(45deg, #7442BF 30%, #9C27B0 90%)',
-                  backgroundClip: 'text',
-                  textFillColor: 'transparent',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  letterSpacing: '0.5px',
-                  '& .special-s': {
-                    background: 'linear-gradient(45deg, #FFD700 0%, #FFA500 30%, #FF6B6B 60%, #7442BF 100%)',
-                    backgroundClip: 'text',
-                    WebkitBackgroundClip: 'text',
-                    textFillColor: 'transparent',
-                    WebkitTextFillColor: 'transparent',
-                    display: 'inline-block',
-                    fontWeight: 800,
-                    fontSize: '1.1em',
-                    animation: 'shimmer 2s ease-in-out infinite alternate',
-                    filter: 'drop-shadow(0 0 8px rgba(255, 215, 0, 0.4))',
-                    transform: 'scale(1.05)',
-                    '@keyframes shimmer': {
-                      '0%': {
-                        filter: 'drop-shadow(0 0 8px rgba(255, 215, 0, 0.4)) brightness(1)',
-                      },
-                      '100%': {
-                        filter: 'drop-shadow(0 0 12px rgba(255, 107, 107, 0.6)) brightness(1.2)',
-                      }
-                    }
-                  }
-                }}
-              >
-                Rever<span className="special-s">S</span><span className="special-s">S</span>ale
-              </Typography>
-            </Box>
-
             <Box component="form" onSubmit={handleSubmit} mt={4} width="100%">
               {error && (
                 <Alert severity="error" sx={{ mb: 2 }}>

@@ -356,64 +356,6 @@ What industry or business challenge would you like to discuss?`;
         py: 6,
         position: 'relative'
       }}>
-        {/* Logo and Brand */}
-        <Box sx={{ 
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          mb: 4
-        }}>
-          <Box 
-            component="img" 
-            src={logo} 
-            alt="reverssale" 
-            sx={{ 
-              width: 72, 
-              height: 72, 
-              mb: 3,
-              filter: 'drop-shadow(0px 4px 8px rgba(116, 66, 191, 0.2))'
-            }} 
-          />
-          <Typography
-            variant="h2"
-            component="div"
-            sx={{
-              fontWeight: 700,
-              background: 'linear-gradient(135deg, #7442BF 0%, #9C27B0 50%, #E91E63 100%)',
-              backgroundClip: 'text',
-              textFillColor: 'transparent',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              letterSpacing: '1px',
-              textAlign: 'center',
-              fontSize: { xs: '2.5rem', md: '3.5rem' },
-              '& .special-s': {
-                background: 'linear-gradient(45deg, #FFD700 0%, #FFA500 30%, #FF6B6B 60%, #7442BF 100%)',
-                backgroundClip: 'text',
-                WebkitBackgroundClip: 'text',
-                textFillColor: 'transparent',
-                WebkitTextFillColor: 'transparent',
-                display: 'inline-block',
-                fontWeight: 800,
-                fontSize: '1.1em',
-                animation: 'shimmer 2s ease-in-out infinite alternate',
-                filter: 'drop-shadow(0 0 8px rgba(255, 215, 0, 0.4))',
-                transform: 'scale(1.05)',
-                '@keyframes shimmer': {
-                  '0%': {
-                    filter: 'drop-shadow(0 0 8px rgba(255, 215, 0, 0.4)) brightness(1)',
-                  },
-                  '100%': {
-                    filter: 'drop-shadow(0 0 12px rgba(255, 107, 107, 0.6)) brightness(1.2)',
-                  }
-                }
-              }
-            }}
-          >
-            Rever<span className="special-s">S</span><span className="special-s">S</span>ale
-          </Typography>
-        </Box>
-
         {/* Main Voice Button - Prominent Center Position */}
         <Box sx={{ 
           display: 'flex',
