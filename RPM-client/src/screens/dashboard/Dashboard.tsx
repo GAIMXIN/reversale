@@ -60,7 +60,7 @@ const Dashboard: React.FC = () => {
     <Box sx={{ 
       minHeight: '100vh',
       bgcolor: '#f8f9fa',
-      pt: 2
+      pt: 8
     }}>
       <Container maxWidth="xl" sx={{ py: 3 }}>
         {/* Header Section */}

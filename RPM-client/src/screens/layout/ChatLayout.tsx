@@ -5,6 +5,7 @@ import { AccountCircle, Logout } from "@mui/icons-material";
 import ChatSidebar from "./ChatSidebar";
 import { useAuth } from "../../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
+import logo from '../../assests/img/logo.png';
 
 interface ChatLayoutProps {
   children: ReactNode;
@@ -38,6 +39,33 @@ const ChatLayout: React.FC<ChatLayoutProps> = ({ children }) => {
     <Box sx={{ display: "flex", minHeight: "100vh", bgcolor: "background.default" }}>
       <ChatSidebar collapsed={sidebarCollapsed} onToggle={toggleSidebar} />
       
+      {/* Dynamic Logo positioned to the right of sidebar */}
+      <Box
+        sx={{
+          position: 'fixed',
+          top: 4,
+          left: sidebarCollapsed ? 88 : 296, // 72px (collapsed width) + 16px margin OR 280px (expanded width) + 16px margin
+          zIndex: 1000,
+          display: 'flex',
+          alignItems: 'center',
+          cursor: 'pointer',
+          transition: 'left 0.3s ease', // Smooth transition when sidebar toggles
+        }}
+        onClick={() => navigate('/')}
+      >
+        <Box 
+          component="img" 
+          src={logo} 
+          alt="ReverSale" 
+          sx={{ 
+            height: 50, // Fixed height instead of width to maintain aspect ratio
+            width: 'auto', // Let width adjust automatically
+            maxWidth: 200, // Prevent it from getting too wide
+            objectFit: 'contain', // Ensure the entire logo is visible
+          }} 
+        />
+      </Box>
+
       {/* User Button - Login or Logout */}
       {isAuthenticated ? (
         <>

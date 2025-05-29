@@ -178,9 +178,9 @@ import {
                 <Typography
                   variant="body2"
                   sx={{ cursor: "pointer", color: "#7442BF" }}
-                  onClick={() => navigate("/register")}
+                  onClick={() => navigate("/signup")}
                 >
-                  Register
+                  Sign up
                 </Typography>
               </Box>
             </Box>

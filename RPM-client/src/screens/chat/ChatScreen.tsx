@@ -8,8 +8,21 @@ import {
   Button,
   Tooltip,
   Fab,
+  Menu,
+  MenuItem,
+  ListItemIcon,
+  ListItemText,
 } from "@mui/material";
-import { Send as SendIcon, Mic as MicIcon, MicOff as MicOffIcon, Keyboard as KeyboardIcon } from "@mui/icons-material";
+import { 
+  Send as SendIcon, 
+  Mic as MicIcon, 
+  MicOff as MicOffIcon, 
+  Keyboard as KeyboardIcon,
+  Add as AddIcon,
+  Folder as FolderIcon,
+  CameraAlt as CameraIcon,
+  Photo as PhotoIcon,
+} from "@mui/icons-material";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import logo from '../../assests/img/logo.png';
@@ -28,6 +41,7 @@ export default function ChatScreen({ isAuthenticated = false }: ChatScreenProps)
   const [input, setInput] = useState("");
   const [isRecording, setIsRecording] = useState(false);
   const [showTextInput, setShowTextInput] = useState(false);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const navigate = useNavigate();
   
   // 处理聊天历史记录加载
@@ -135,7 +149,7 @@ I understand the challenges in medical practice! A doctor's wife recently told u
 
 🎯 **Common Healthcare Pain Points:**
 • Excessive documentation time (2-3 hours daily)
-• SOAP notes taking time away from family
+• SOAP notes and medical records consume 35-40% of a doctor's time
 • Administrative burden and physician burnout
 • Work-life balance challenges
 
@@ -312,9 +326,20 @@ What industry or business challenge would you like to discuss?`;
       mediaRecorder.onstop = () => {
         const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
         // Here you would typically send the audio to a speech-to-text service
-        // For now, we'll simulate the process
+        // For now, we'll simulate the process with a business-focused summary
         setTimeout(() => {
-          setInput("This is a simulated voice input. In a real implementation, this would be the transcribed text from your speech.");
+          const businessSummaries = [
+            "I need help improving my restaurant's customer retention and reducing food waste.",
+            "My e-commerce business is struggling with high cart abandonment rates and customer acquisition costs.",
+            "I'm looking for solutions to streamline my healthcare practice's documentation workflow.",
+            "My tech startup needs guidance on scaling our infrastructure and finding product-market fit.",
+            "I want to optimize my retail store's inventory management and increase online sales.",
+            "My consulting business needs better client management and marketing strategies."
+          ];
+          
+          // Randomly select a business summary to simulate speech-to-text + AI summarization
+          const randomSummary = businessSummaries[Math.floor(Math.random() * businessSummaries.length)];
+          setInput(randomSummary);
           setIsRecording(false);
         }, 2000);
         
@@ -343,10 +368,443 @@ What industry or business challenge would you like to discuss?`;
     }
   };
 
+  // Menu handlers
+  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  // Action handlers
+  const handleFileUpload = () => {
+    handleMenuClose();
+    // Create a file input element
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.multiple = true;
+    input.accept = '*/*';
+    input.onchange = (e) => {
+      const files = (e.target as HTMLInputElement).files;
+      if (files) {
+        console.log('Files selected:', files);
+        // Handle file upload logic here
+        // You can process the files and add them to the chat
+      }
+    };
+    input.click();
+  };
+
+  const handleCameraCapture = async () => {
+    handleMenuClose();
+    try {
+      // Check if camera is supported
+      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        // Create a video element to show camera preview
+        // This is a basic implementation - you might want to create a proper camera modal
+        console.log('Camera access granted');
+        // Stop the stream for now
+        stream.getTracks().forEach(track => track.stop());
+        // You can implement a proper camera capture modal here
+      } else {
+        alert('Camera not supported on this device');
+      }
+    } catch (error) {
+      console.error('Camera access denied:', error);
+      alert('Camera access denied');
+    }
+  };
+
+  const handlePhotoSelect = () => {
+    handleMenuClose();
+    // Create a file input for images only
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.multiple = true;
+    input.accept = 'image/*';
+    input.onchange = (e) => {
+      const files = (e.target as HTMLInputElement).files;
+      if (files) {
+        console.log('Photos selected:', files);
+        // Handle photo selection logic here
+        // You can process the images and add them to the chat
+      }
+    };
+    input.click();
+  };
+
+  // Landing Page for Unauthenticated Users
+  if (!isAuthenticated) {
+    return (
+      <Box sx={{ 
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        height: '100vh',
+        width: '100vw',
+        display: 'flex', 
+        flexDirection: 'column',
+        bgcolor: '#ffffff',
+        zIndex: 9999,
+        overflow: 'hidden'
+      }}>
+        {/* Top Navigation Bar */}
+        <Box sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          px: 4,
+          py: 2,
+          borderBottom: '1px solid #f0f0f0',
+          bgcolor: '#ffffff',
+          position: 'relative',
+          zIndex: 10000
+        }}>
+          {/* Logo */}
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <Box 
+              component="img" 
+              src={logo} 
+              alt="ReverSale" 
+              sx={{ 
+                width: 120, 
+                height: 'auto',
+                maxHeight: 40
+              }} 
+            />
+          </Box>
+
+          {/* Auth Buttons */}
+          <Box sx={{ display: 'flex', gap: 2 }}>
+            <Button
+              variant="contained"
+              onClick={() => navigate('/login')}
+              sx={{
+                bgcolor: '#7442BF',
+                color: 'white',
+                borderRadius: '25px',
+                px: 3,
+                py: 1,
+                textTransform: 'none',
+                fontWeight: 600,
+                '&:hover': {
+                  bgcolor: '#5e3399'
+                }
+              }}
+            >
+              Log in
+            </Button>
+            <Button
+              variant="outlined"
+              onClick={() => navigate('/signup')}
+              sx={{
+                borderColor: '#7442BF',
+                color: '#7442BF',
+                borderRadius: '25px',
+                px: 3,
+                py: 1,
+                textTransform: 'none',
+                fontWeight: 600,
+                '&:hover': {
+                  borderColor: '#5e3399',
+                  bgcolor: 'rgba(116, 66, 191, 0.05)'
+                }
+              }}
+            >
+              Sign up
+            </Button>
+          </Box>
+        </Box>
+
+        {/* Main Landing Content */}
+        <Box sx={{
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          px: 3,
+          py: 6,
+          bgcolor: '#ffffff',
+          position: 'relative'
+        }}>
+          {/* Microphone Button */}
+          <Box sx={{ mb: 4 }}>
+            <Fab
+              onClick={isRecording ? stopRecording : startRecording}
+              sx={{
+                width: 120,
+                height: 120,
+                bgcolor: isRecording ? '#ff4757' : '#7442BF',
+                color: 'white',
+                boxShadow: isRecording 
+                  ? '0 8px 32px rgba(255, 71, 87, 0.4)'
+                  : '0 8px 32px rgba(116, 66, 191, 0.4)',
+                '&:hover': {
+                  bgcolor: isRecording ? '#ff3838' : '#5e3399',
+                  transform: 'scale(1.05)',
+                  boxShadow: isRecording 
+                    ? '0 12px 40px rgba(255, 71, 87, 0.5)'
+                    : '0 12px 40px rgba(116, 66, 191, 0.5)',
+                },
+                transition: 'all 0.3s ease',
+                animation: isRecording ? 'pulse 1.5s ease-in-out infinite' : 'none',
+                '@keyframes pulse': {
+                  '0%': {
+                    transform: 'scale(1)',
+                    boxShadow: '0 8px 32px rgba(255, 71, 87, 0.4)',
+                  },
+                  '50%': {
+                    transform: 'scale(1.05)',
+                    boxShadow: '0 8px 32px rgba(255, 71, 87, 0.4), 0 0 0 20px rgba(255, 71, 87, 0)',
+                  },
+                  '100%': {
+                    transform: 'scale(1)',
+                    boxShadow: '0 8px 32px rgba(255, 71, 87, 0.4)',
+                  }
+                }
+              }}
+            >
+              {isRecording ? (
+                <MicOffIcon sx={{ fontSize: 48 }} />
+              ) : (
+                <MicIcon sx={{ fontSize: 48 }} />
+              )}
+            </Fab>
+          </Box>
+
+          {/* Main Headline */}
+          <Typography 
+            variant="h3" 
+            sx={{ 
+              fontWeight: 700,
+              color: '#000',
+              textAlign: 'center',
+              mb: 3,
+              fontSize: { xs: '2rem', md: '3rem' },
+              fontFamily: 'Inter, sans-serif'
+            }}
+          >
+            What's holding your business back?
+          </Typography>
+
+          {/* Placeholder Input */}
+          <Box sx={{
+            width: '100%',
+            maxWidth: '600px',
+            bgcolor: 'white',
+            borderRadius: '25px',
+            border: '1px solid #e9ecef',
+            px: 3,
+            py: 2,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 2,
+            position: 'relative',
+            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
+            '&:hover': {
+              boxShadow: '0 6px 25px rgba(116, 66, 191, 0.15)',
+              borderColor: 'rgba(116, 66, 191, 0.2)'
+            },
+            '&:focus-within': {
+              boxShadow: '0 6px 25px rgba(116, 66, 191, 0.2)',
+              borderColor: '#7442BF'
+            }
+          }}>
+            <TextField
+              fullWidth
+              variant="outlined"
+              placeholder="Tap the mic and speak your need. I will summarize it for you."
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyPress={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSend();
+                }
+              }}
+              multiline
+              maxRows={4}
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  border: 'none',
+                  fontSize: '1rem',
+                  '& fieldset': {
+                    border: 'none'
+                  },
+                  '&:hover fieldset': {
+                    border: 'none'
+                  },
+                  '&.Mui-focused fieldset': {
+                    border: 'none'
+                  }
+                }
+              }}
+            />
+            <IconButton 
+              onClick={handleMenuOpen}
+              sx={{ 
+                color: '#6c757d',
+                fontSize: '1.2rem',
+                '&:hover': {
+                  bgcolor: 'rgba(116, 66, 191, 0.1)',
+                  color: '#7442BF'
+                }
+              }}
+            >
+              <AddIcon />
+            </IconButton>
+            <IconButton 
+              onClick={handleSend}
+              disabled={!input.trim()}
+              sx={{ 
+                bgcolor: '#7442BF',
+                color: 'white',
+                '&:hover': { 
+                  bgcolor: '#5e3399',
+                  transform: 'scale(1.05)'
+                },
+                '&:disabled': {
+                  bgcolor: '#ccc',
+                  color: '#999'
+                },
+                width: 40,
+                height: 40,
+                boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                transition: 'all 0.2s ease'
+              }}
+            >
+              <SendIcon sx={{ fontSize: 20 }} />
+            </IconButton>
+
+            {/* Action Menu */}
+            <Menu
+              anchorEl={anchorEl}
+              open={Boolean(anchorEl)}
+              onClose={handleMenuClose}
+              anchorOrigin={{
+                vertical: 'bottom',
+                horizontal: 'right',
+              }}
+              transformOrigin={{
+                vertical: 'top',
+                horizontal: 'right',
+              }}
+              PaperProps={{
+                sx: {
+                  borderRadius: 2,
+                  boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)',
+                  border: '1px solid #e9ecef',
+                  mt: 1,
+                  zIndex: 99999,
+                  minWidth: 200
+                }
+              }}
+              MenuListProps={{
+                sx: {
+                  py: 1
+                }
+              }}
+              sx={{
+                zIndex: 99999
+              }}
+            >
+              <MenuItem onClick={handleFileUpload} sx={{ py: 1.5, px: 2 }}>
+                <ListItemIcon sx={{ minWidth: 36 }}>
+                  <FolderIcon sx={{ color: '#7442BF', fontSize: 20 }} />
+                </ListItemIcon>
+                <ListItemText 
+                  primary="Files" 
+                  sx={{ 
+                    '& .MuiListItemText-primary': { 
+                      fontSize: '0.95rem',
+                      fontWeight: 500 
+                    } 
+                  }} 
+                />
+              </MenuItem>
+              
+              <MenuItem onClick={handleCameraCapture} sx={{ py: 1.5, px: 2 }}>
+                <ListItemIcon sx={{ minWidth: 36 }}>
+                  <CameraIcon sx={{ color: '#7442BF', fontSize: 20 }} />
+                </ListItemIcon>
+                <ListItemText 
+                  primary="Camera" 
+                  sx={{ 
+                    '& .MuiListItemText-primary': { 
+                      fontSize: '0.95rem',
+                      fontWeight: 500 
+                    } 
+                  }} 
+                />
+              </MenuItem>
+              
+              <MenuItem onClick={handlePhotoSelect} sx={{ py: 1.5, px: 2 }}>
+                <ListItemIcon sx={{ minWidth: 36 }}>
+                  <PhotoIcon sx={{ color: '#7442BF', fontSize: 20 }} />
+                </ListItemIcon>
+                <ListItemText 
+                  primary="Photos" 
+                  sx={{ 
+                    '& .MuiListItemText-primary': { 
+                      fontSize: '0.95rem',
+                      fontWeight: 500 
+                    } 
+                  }} 
+                />
+              </MenuItem>
+            </Menu>
+          </Box>
+
+          {/* Chat Messages for Landing Page */}
+          {messages.length > 0 && (
+            <Container maxWidth="md" sx={{ 
+              mt: 4,
+              width: '100%'
+            }}>
+              <Box sx={{ 
+                overflow: 'auto', 
+                px: 1
+              }}>
+                {messages.map((message, index) => (
+                  <Paper
+                    key={index}
+                    sx={{
+                      p: 3,
+                      mb: 3,
+                      maxWidth: '75%',
+                      ml: message.role === 'user' ? 'auto' : 0,
+                      bgcolor: message.role === 'user' ? '#7442BF' : 'white',
+                      color: message.role === 'user' ? 'white' : '#495057',
+                      borderRadius: 3,
+                      boxShadow: message.role === 'user' 
+                        ? '0 4px 15px rgba(116, 66, 191, 0.3)' 
+                        : '0 4px 15px rgba(0,0,0,0.1)',
+                      border: message.role === 'user' ? 'none' : '1px solid #e9ecef'
+                    }}
+                  >
+                    <Typography sx={{ fontSize: '1rem', lineHeight: 1.5 }}>
+                      {message.content}
+                    </Typography>
+                  </Paper>
+                ))}
+              </Box>
+            </Container>
+          )}
+        </Box>
+      </Box>
+    );
+  }
+
+  // Authenticated Chat Interface (existing implementation)
   return (
     <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column', bgcolor: '#f8f9fa' }}>
       {/* Main Content */}
-      <Box sx={{ 
+      <Box sx={{
         flex: 1,
         display: 'flex',
         flexDirection: 'column',
@@ -354,15 +812,11 @@ What industry or business challenge would you like to discuss?`;
         justifyContent: 'center',
         px: 3,
         py: 6,
+        bgcolor: '#ffffff',
         position: 'relative'
       }}>
-        {/* Main Voice Button - Prominent Center Position */}
-        <Box sx={{ 
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          mb: 4
-        }}>
+        {/* Microphone Button */}
+        <Box sx={{ mb: 4 }}>
           <Fab
             onClick={isRecording ? stopRecording : startRecording}
             sx={{
@@ -371,8 +825,8 @@ What industry or business challenge would you like to discuss?`;
               bgcolor: isRecording ? '#ff4757' : '#7442BF',
               color: 'white',
               boxShadow: isRecording 
-                ? '0 8px 32px rgba(255, 71, 87, 0.4), 0 0 0 0 rgba(255, 71, 87, 0.7)'
-                : '0 8px 32px rgba(116, 66, 191, 0.4), 0 0 0 0 rgba(116, 66, 191, 0.7)',
+                ? '0 8px 32px rgba(255, 71, 87, 0.4)'
+                : '0 8px 32px rgba(116, 66, 191, 0.4)',
               '&:hover': {
                 bgcolor: isRecording ? '#ff3838' : '#5e3399',
                 transform: 'scale(1.05)',
@@ -385,7 +839,7 @@ What industry or business challenge would you like to discuss?`;
               '@keyframes pulse': {
                 '0%': {
                   transform: 'scale(1)',
-                  boxShadow: '0 8px 32px rgba(255, 71, 87, 0.4), 0 0 0 0 rgba(255, 71, 87, 0.7)',
+                  boxShadow: '0 8px 32px rgba(255, 71, 87, 0.4)',
                 },
                 '50%': {
                   transform: 'scale(1.05)',
@@ -393,7 +847,7 @@ What industry or business challenge would you like to discuss?`;
                 },
                 '100%': {
                   transform: 'scale(1)',
-                  boxShadow: '0 8px 32px rgba(255, 71, 87, 0.4), 0 0 0 0 rgba(255, 71, 87, 0)',
+                  boxShadow: '0 8px 32px rgba(255, 71, 87, 0.4)',
                 }
               }
             }}
@@ -404,142 +858,198 @@ What industry or business challenge would you like to discuss?`;
               <MicIcon sx={{ fontSize: 48 }} />
             )}
           </Fab>
-          
-          {/* Voice Button Instructions */}
-          <Typography 
-            sx={{ 
-              mt: 3,
-              color: isRecording ? '#ff4757' : '#7442BF',
-              fontSize: '1.2rem',
-              fontWeight: 600,
-              textAlign: 'center',
-              animation: isRecording ? 'fadeInOut 2s ease-in-out infinite' : 'none',
-              '@keyframes fadeInOut': {
-                '0%, 100%': { opacity: 0.7 },
-                '50%': { opacity: 1 }
-              }
-            }}
-          >
-            {isRecording ? 'Recording... Click to stop' : '🎤 Click to start voice conversation'}
-          </Typography>
-          
-          <Typography 
-            sx={{ 
-              mt: 1,
-              color: '#6c757d',
-              fontSize: '0.95rem',
-              textAlign: 'center',
-              maxWidth: '400px'
-            }}
-          >
-            {isRecording 
-              ? 'Describe your business challenges or industry, and I\'ll analyze and recommend professionals'
-              : 'Describe your business or industry, and I\'ll analyze your pain points and match you with the right professionals'
-            }
-          </Typography>
         </Box>
 
-        {/* Alternative Text Input Toggle */}
-        <Button
-          startIcon={<KeyboardIcon />}
-          onClick={() => setShowTextInput(!showTextInput)}
-          sx={{
-            color: '#6c757d',
-            textTransform: 'none',
-            fontSize: '0.9rem',
+        {/* Main Headline */}
+        <Typography 
+          variant="h3" 
+          sx={{ 
+            fontWeight: 700,
+            color: '#000',
+            textAlign: 'center',
             mb: 3,
-            '&:hover': {
-              bgcolor: 'rgba(116, 66, 191, 0.05)',
-              color: '#7442BF'
-            }
+            fontSize: { xs: '2rem', md: '3rem' },
+            fontFamily: 'Inter, sans-serif'
           }}
         >
-          {showTextInput ? 'Hide text input' : 'Use text input'}
-        </Button>
+          What's holding your business back?
+        </Typography>
 
-        {/* Text Input Section - Only show when toggled */}
-        {showTextInput && (
-          <Container maxWidth="sm" sx={{ width: '100%', mb: 4 }}>
-            <Box sx={{ 
-              display: 'flex', 
-              gap: 2, 
-              p: 2,
-              bgcolor: 'white',
-              borderRadius: 4,
-              boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
-              border: '1px solid #e9ecef',
-              '&:hover': {
-                boxShadow: '0 6px 25px rgba(116, 66, 191, 0.15)',
-                borderColor: 'rgba(116, 66, 191, 0.2)'
-              },
-              '&:focus-within': {
-                boxShadow: '0 6px 25px rgba(116, 66, 191, 0.2)',
-                borderColor: '#7442BF'
+        {/* Input Field */}
+        <Box sx={{
+          width: '100%',
+          maxWidth: '600px',
+          bgcolor: 'white',
+          borderRadius: '25px',
+          border: '1px solid #e9ecef',
+          px: 3,
+          py: 2,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 2,
+          position: 'relative',
+          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
+          '&:hover': {
+            boxShadow: '0 6px 25px rgba(116, 66, 191, 0.15)',
+            borderColor: 'rgba(116, 66, 191, 0.2)'
+          },
+          '&:focus-within': {
+            boxShadow: '0 6px 25px rgba(116, 66, 191, 0.2)',
+            borderColor: '#7442BF'
+          }
+        }}>
+          <TextField
+            fullWidth
+            variant="outlined"
+            placeholder="Tap the mic and speak your need. I will summarize it for you."
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyPress={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleSend();
               }
-            }}>
-              <TextField
-                fullWidth
-                variant="outlined"
-                placeholder="Type your message..."
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyPress={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    handleSend();
-                  }
-                }}
-                multiline
-                maxRows={4}
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    border: 'none',
-                    fontSize: '1rem',
-                    '& fieldset': {
-                      border: 'none'
-                    },
-                    '&:hover fieldset': {
-                      border: 'none'
-                    },
-                    '&.Mui-focused fieldset': {
-                      border: 'none'
-                    }
-                  }
-                }}
-              />
-              <IconButton 
-                onClick={handleSend}
-                sx={{ 
-                  bgcolor: '#7442BF',
-                  color: 'white',
-                  '&:hover': { 
-                    bgcolor: '#5e3399',
-                    transform: 'scale(1.05)'
-                  },
-                  width: 44,
-                  height: 44,
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-                  transition: 'all 0.2s ease'
-                }}
-              >
-                <SendIcon sx={{ fontSize: 22 }} />
-              </IconButton>
-            </Box>
-          </Container>
-        )}
+            }}
+            multiline
+            maxRows={4}
+            sx={{
+              '& .MuiOutlinedInput-root': {
+                border: 'none',
+                fontSize: '1rem',
+                '& fieldset': {
+                  border: 'none'
+                },
+                '&:hover fieldset': {
+                  border: 'none'
+                },
+                '&.Mui-focused fieldset': {
+                  border: 'none'
+                }
+              }
+            }}
+          />
+          <IconButton 
+            onClick={handleMenuOpen}
+            sx={{ 
+              color: '#6c757d',
+              fontSize: '1.2rem',
+              '&:hover': {
+                bgcolor: 'rgba(116, 66, 191, 0.1)',
+                color: '#7442BF'
+              }
+            }}
+          >
+            <AddIcon />
+          </IconButton>
+          <IconButton 
+            onClick={handleSend}
+            disabled={!input.trim()}
+            sx={{ 
+              bgcolor: '#7442BF',
+              color: 'white',
+              '&:hover': { 
+                bgcolor: '#5e3399',
+                transform: 'scale(1.05)'
+              },
+              '&:disabled': {
+                bgcolor: '#ccc',
+                color: '#999'
+              },
+              width: 40,
+              height: 40,
+              boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+              transition: 'all 0.2s ease'
+            }}
+          >
+            <SendIcon sx={{ fontSize: 20 }} />
+          </IconButton>
 
-        {/* Chat Section */}
+          {/* Action Menu */}
+          <Menu
+            anchorEl={anchorEl}
+            open={Boolean(anchorEl)}
+            onClose={handleMenuClose}
+            anchorOrigin={{
+              vertical: 'bottom',
+              horizontal: 'right',
+            }}
+            transformOrigin={{
+              vertical: 'top',
+              horizontal: 'right',
+            }}
+            PaperProps={{
+              sx: {
+                borderRadius: 2,
+                boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)',
+                border: '1px solid #e9ecef',
+                mt: 1,
+                zIndex: 99999,
+                minWidth: 200
+              }
+            }}
+            MenuListProps={{
+              sx: {
+                py: 1
+              }
+            }}
+            sx={{
+              zIndex: 99999
+            }}
+          >
+            <MenuItem onClick={handleFileUpload} sx={{ py: 1.5, px: 2 }}>
+              <ListItemIcon sx={{ minWidth: 36 }}>
+                <FolderIcon sx={{ color: '#7442BF', fontSize: 20 }} />
+              </ListItemIcon>
+              <ListItemText 
+                primary="Files" 
+                sx={{ 
+                  '& .MuiListItemText-primary': { 
+                    fontSize: '0.95rem',
+                    fontWeight: 500 
+                  } 
+                }} 
+              />
+            </MenuItem>
+            
+            <MenuItem onClick={handleCameraCapture} sx={{ py: 1.5, px: 2 }}>
+              <ListItemIcon sx={{ minWidth: 36 }}>
+                <CameraIcon sx={{ color: '#7442BF', fontSize: 20 }} />
+              </ListItemIcon>
+              <ListItemText 
+                primary="Camera" 
+                sx={{ 
+                  '& .MuiListItemText-primary': { 
+                    fontSize: '0.95rem',
+                    fontWeight: 500 
+                  } 
+                }} 
+              />
+            </MenuItem>
+            
+            <MenuItem onClick={handlePhotoSelect} sx={{ py: 1.5, px: 2 }}>
+              <ListItemIcon sx={{ minWidth: 36 }}>
+                <PhotoIcon sx={{ color: '#7442BF', fontSize: 20 }} />
+              </ListItemIcon>
+              <ListItemText 
+                primary="Photos" 
+                sx={{ 
+                  '& .MuiListItemText-primary': { 
+                    fontSize: '0.95rem',
+                    fontWeight: 500 
+                  } 
+                }} 
+              />
+            </MenuItem>
+          </Menu>
+        </Box>
+
+        {/* Chat Messages for Authenticated Users */}
         {messages.length > 0 && (
           <Container maxWidth="md" sx={{ 
-            flex: 1,
-            display: 'flex', 
-            flexDirection: 'column', 
-            py: 4,
-            mt: 2,
+            mt: 4,
             width: '100%'
           }}>
             <Box sx={{ 
-              flex: 1, 
               overflow: 'auto', 
               px: 1
             }}>

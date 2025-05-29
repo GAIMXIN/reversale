@@ -120,6 +120,7 @@ export default function ChatSidebar({ collapsed, onToggle }: ChatSidebarProps) {
           backgroundColor: '#f5f5f5',
           transition: 'width 0.3s ease',
           overflowX: 'hidden',
+          zIndex: 1200, // Ensure it's below the fixed logo
         },
       }}
     >
@@ -143,25 +144,6 @@ export default function ChatSidebar({ collapsed, onToggle }: ChatSidebarProps) {
             {collapsed ? <MenuIcon /> : <ChevronLeftIcon />}
           </IconButton>
         </Box>
-
-        {/* Brand/Logo Area */}
-        {!collapsed && (
-          <Box sx={{ p: 2, textAlign: 'center', borderBottom: '1px solid #e0e0e0' }}>
-            <Typography 
-              variant="h6" 
-              sx={{ 
-                fontWeight: 700,
-                background: 'linear-gradient(135deg, #7442BF 0%, #9C27B0 50%, #E91E63 100%)',
-                backgroundClip: 'text',
-                textFillColor: 'transparent',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-              }}
-            >
-              ReverSSale
-            </Typography>
-          </Box>
-        )}
 
         {/* New Chat Button - Always show when authenticated */}
         {isAuthenticated && (

@@ -195,7 +195,7 @@ export default function BusinessInsights() {
   };
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+    <Container maxWidth="lg" sx={{ mt: 8, mb: 4 }}>
       {/* Header */}
       <Paper sx={{ 
         p: 4, 
