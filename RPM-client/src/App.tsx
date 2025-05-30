@@ -2,12 +2,11 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from '@mui/material/styles';
 import { theme } from './theme';
-import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { AuthProvider } from './contexts/AuthContext';
 import { RequestProvider } from './contexts/RequestContext';
+import { useAuth } from './contexts/AuthContext';
 import Register from './screens/auth/register/Register';
 import Login from './screens/auth/login/Login';
-import SalesmanDashboard from './screens/dashboard/SalesmanDashboard';
-import ContactSalesman from './screens/contactSalesman/ContactSalesman';
 import BusinessInsights from './screens/businessInsights/BusinessInsights';
 import PersonalizedProducts from './screens/personalizedProducts/PersonalizedProducts';
 import Billing from './screens/billing/Billing';
@@ -15,20 +14,29 @@ import RequestReview from './screens/requestReview/RequestReview';
 import PostListView from './screens/posts/PostListView';
 import PostDetailPage from './screens/posts/PostDetailPage';
 import Inbox from './screens/inbox/Inbox';
+import ProfileSettings from './screens/profile/ProfileSettings';
 import MainLayout from './screens/layout/MainLayout';
-import SalesmanLayout from './screens/layout/SalesmanLayout';
 import ChatScreen from './screens/chat/ChatScreen';
-import SalesmanChatScreen from './screens/chat/SalesmanChatScreen';
 import ChatLayout from './screens/layout/ChatLayout';
+import SalesLayout from './components/SalesLayout';
+import SalesDashboard from './screens/sales/SalesDashboard';
+import SalesLeads from './screens/sales/SalesLeads';
+import SalesDeals from './screens/sales/SalesDeals';
+import SalesEarnings from './screens/sales/SalesEarnings';
+import SalesInbox from './screens/sales/SalesInbox';
+import SalesSettings from './screens/sales/SalesSettings';
+import DraftEdit from './screens/sales/DraftEdit';
+import MassEmailSender from './screens/tools/MassEmailSender';
+import ToolsPlaceholder from './screens/tools/ToolsPlaceholder';
 import './App.css';
 
 // Protected Chat Component for regular users
 const ProtectedChat: React.FC = () => {
   const { isAuthenticated, user } = useAuth();
   
-  // Redirect salesman users to their dashboard
-  if (isAuthenticated && user?.userType === 'salesman') {
-    return <Navigate to="/salesman-dashboard" replace />;
+  // Redirect salesperson users to their dashboard
+  if (isAuthenticated && user?.userType === 'salesperson') {
+    return <Navigate to="/sales/dashboard" replace />;
   }
   
   return (
@@ -39,7 +47,7 @@ const ProtectedChat: React.FC = () => {
 };
 
 // Protected Route Component
-const ProtectedRoute: React.FC<{ children: React.ReactNode; allowedUserTypes?: ('test' | 'salesman')[] }> = ({ 
+const ProtectedRoute: React.FC<{ children: React.ReactNode; allowedUserTypes?: ('test' | 'salesperson')[] }> = ({ 
   children, 
   allowedUserTypes = ['test'] 
 }) => {
@@ -115,19 +123,21 @@ function App() {
                 } 
               />
               
+              {/* Profile Settings Route */}
               <Route 
-                path="/contact-salesman" 
+                path="/profile" 
                 element={
                   <ProtectedRoute allowedUserTypes={['test']}>
-                    <ChatLayout><ContactSalesman /></ChatLayout>
+                    <ChatLayout><ProfileSettings /></ChatLayout>
                   </ProtectedRoute>
                 } 
               />
+              
               <Route 
                 path="/support" 
                 element={
                   <ProtectedRoute allowedUserTypes={['test']}>
-                    <ChatLayout><ContactSalesman /></ChatLayout>
+                    <ChatLayout><Inbox /></ChatLayout>
                   </ProtectedRoute>
                 } 
               />
@@ -164,20 +174,76 @@ function App() {
                 } 
               />
               
-              {/* Salesman routes */}
+              {/* Sales routes - New commission-first sales architecture */}
               <Route 
-                path="/salesman-dashboard" 
+                path="/sales/dashboard" 
                 element={
-                  <ProtectedRoute allowedUserTypes={['salesman']}>
-                    <SalesmanLayout><SalesmanDashboard /></SalesmanLayout>
+                  <ProtectedRoute allowedUserTypes={['salesperson']}>
+                    <SalesLayout><SalesDashboard /></SalesLayout>
                   </ProtectedRoute>
                 } 
               />
               <Route 
-                path="/salesman-chat" 
+                path="/sales/leads" 
                 element={
-                  <ProtectedRoute allowedUserTypes={['salesman']}>
-                    <SalesmanLayout><SalesmanChatScreen /></SalesmanLayout>
+                  <ProtectedRoute allowedUserTypes={['salesperson']}>
+                    <SalesLayout><SalesLeads /></SalesLayout>
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/sales/deals" 
+                element={
+                  <ProtectedRoute allowedUserTypes={['salesperson']}>
+                    <SalesLayout><SalesDeals /></SalesLayout>
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/sales/earnings" 
+                element={
+                  <ProtectedRoute allowedUserTypes={['salesperson']}>
+                    <SalesLayout><SalesEarnings /></SalesLayout>
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/sales/inbox" 
+                element={
+                  <ProtectedRoute allowedUserTypes={['salesperson']}>
+                    <SalesLayout><SalesInbox /></SalesLayout>
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/sales/settings" 
+                element={
+                  <ProtectedRoute allowedUserTypes={['salesperson']}>
+                    <SalesLayout><SalesSettings /></SalesLayout>
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/sales/leads/:leadId/drafts/:draftId" 
+                element={
+                  <ProtectedRoute allowedUserTypes={['salesperson']}>
+                    <SalesLayout><DraftEdit /></SalesLayout>
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/sales/outreach/email-sender" 
+                element={
+                  <ProtectedRoute allowedUserTypes={['salesperson']}>
+                    <SalesLayout><MassEmailSender /></SalesLayout>
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/sales/tools" 
+                element={
+                  <ProtectedRoute allowedUserTypes={['salesperson']}>
+                    <SalesLayout><ToolsPlaceholder /></SalesLayout>
                   </ProtectedRoute>
                 } 
               />

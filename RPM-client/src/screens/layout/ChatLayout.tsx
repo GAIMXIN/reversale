@@ -11,7 +11,7 @@ interface ChatLayoutProps {
 }
 
 const SIDEBAR_WIDTH_KEY = 'reversal-sidebar-width';
-const DEFAULT_WIDTH = 280;
+const DEFAULT_WIDTH = 240;
 const MIN_WIDTH = 72;
 const MAX_WIDTH = 400;
 
@@ -44,7 +44,7 @@ const ChatLayout: React.FC<ChatLayoutProps> = ({ children }) => {
   };
 
   const handleProfileSettings = () => {
-    navigate('/dashboard');
+    navigate('/profile');
     handleClose();
   };
 

@@ -61,7 +61,7 @@ import {
       if (!validate()) return;
 
       try {
-        // 模拟登录验证 - 支持不同类型的账号
+        // 模拟登录验证 - 支持test用户和salesperson
         if (email === "test@example.com" && password === "123456") {
           // test用户登录
           const fakeToken = "fake-jwt-token-" + Math.random().toString(36).substring(7);
@@ -74,16 +74,16 @@ import {
           login(fakeToken, testUser);
           navigate('/');
         } else if (email === "salesman@example.com" && password === "123456") {
-          // salesman用户登录
+          // salesperson用户登录
           const fakeToken = "fake-jwt-token-" + Math.random().toString(36).substring(7);
-          const salesmanUser = {
-            id: "salesman-user-1",
+          const salespersonUser = {
+            id: "salesperson-user-1",
             email: email,
-            userType: 'salesman' as const,
+            userType: 'salesperson' as const,
             name: "Sales Representative"
           };
-          login(fakeToken, salesmanUser);
-          navigate('/salesman-dashboard');
+          login(fakeToken, salespersonUser);
+          navigate('/sales/dashboard');
         } else {
           throw new Error('Invalid credentials');
         }

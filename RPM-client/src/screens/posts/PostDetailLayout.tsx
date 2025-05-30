@@ -11,7 +11,7 @@ interface PostDetailLayoutProps {
 }
 
 const SIDEBAR_WIDTH_KEY = 'reversal-sidebar-width';
-const DEFAULT_WIDTH = 280;
+const DEFAULT_WIDTH = 240;
 const MIN_WIDTH = 72;
 const MAX_WIDTH = 400;
 const RIGHT_SIDEBAR_WIDTH = 320;
@@ -41,7 +41,7 @@ const PostDetailLayout: React.FC<PostDetailLayoutProps> = ({ children, rightSide
   };
 
   const handleProfileSettings = () => {
-    navigate('/dashboard');
+    navigate('/profile');
     handleClose();
   };
 

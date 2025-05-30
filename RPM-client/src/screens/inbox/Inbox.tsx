@@ -154,13 +154,13 @@ const Inbox: React.FC = () => {
       <Paper sx={{ 
         p: 4, 
         mb: 4, 
-        background: 'linear-gradient(135deg, #7442BF 0%, #9C27B0 100%)', 
+        background: '#000000', 
         color: 'white' 
       }}>
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <InboxIcon sx={{ fontSize: 40 }} />
-            <Typography variant="h4" sx={{ fontWeight: 600 }}>
+            <InboxIcon sx={{ fontSize: 40, color: 'white' }} />
+            <Typography variant="h4" sx={{ fontWeight: 600, color: 'white' }}>
               Inbox
             </Typography>
           </Box>
@@ -182,10 +182,10 @@ const Inbox: React.FC = () => {
             </Button>
           )}
         </Box>
-        <Typography variant="body1" sx={{ opacity: 0.9 }}>
+        <Typography variant="body1" sx={{ opacity: 0.9, color: 'white' }}>
           Stay updated with responses, status changes, and AI suggestions for your posts
         </Typography>
-        <Typography variant="h6" sx={{ opacity: 0.8, mt: 1 }}>
+        <Typography variant="h6" sx={{ opacity: 0.8, mt: 1, color: 'white' }}>
           {unreadCount} unread {unreadCount === 1 ? 'notification' : 'notifications'}
         </Typography>
       </Paper>

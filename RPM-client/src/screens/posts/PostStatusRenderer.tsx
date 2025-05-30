@@ -65,93 +65,6 @@ const PostStatusRenderer: React.FC<PostStatusRendererProps> = ({ post, onUpdate 
     });
   };
 
-  const renderDraftStatus = () => (
-    <Paper sx={{ p: 4, bgcolor: '#f8f9fa', border: '1px solid #e9ecef', borderRadius: 3 }}>
-      <Typography variant="h6" sx={{ fontWeight: 600, mb: 3, color: '#333' }}>
-        ✏️ Draft Mode
-      </Typography>
-      
-      {isEditing ? (
-        <Box>
-          <TextField
-            label="Title"
-            value={editedPost.title}
-            onChange={(e) => setEditedPost({ ...editedPost, title: e.target.value })}
-            fullWidth
-            margin="normal"
-            variant="outlined"
-          />
-          
-          <TextField
-            label="Problem Description"
-            value={editedPost.problem}
-            onChange={(e) => setEditedPost({ ...editedPost, problem: e.target.value })}
-            fullWidth
-            multiline
-            rows={4}
-            margin="normal"
-            variant="outlined"
-          />
-          
-          <TextField
-            label="Desired Outcome"
-            value={editedPost.desiredOutcome || ''}
-            onChange={(e) => setEditedPost({ ...editedPost, desiredOutcome: e.target.value })}
-            fullWidth
-            multiline
-            rows={3}
-            margin="normal"
-            variant="outlined"
-          />
-          
-          <TextField
-            label="Expected Impact"
-            value={editedPost.impact || ''}
-            onChange={(e) => setEditedPost({ ...editedPost, impact: e.target.value })}
-            fullWidth
-            multiline
-            rows={2}
-            margin="normal"
-            variant="outlined"
-          />
-          
-          <Box sx={{ display: 'flex', gap: 2, mt: 3 }}>
-            <Button 
-              variant="contained" 
-              onClick={handleSave}
-              sx={{ bgcolor: '#7442BF' }}
-            >
-              Save Changes
-            </Button>
-            <Button 
-              variant="outlined" 
-              onClick={handleCancel}
-            >
-              Cancel
-            </Button>
-          </Box>
-        </Box>
-      ) : (
-        <Box>
-          <Alert severity="info" sx={{ mb: 3 }}>
-            This post is still in draft mode. You can edit the content and publish when ready.
-          </Alert>
-          
-          <Button 
-            variant="outlined" 
-            onClick={() => setIsEditing(true)}
-            sx={{ 
-              color: '#7442BF',
-              borderColor: '#7442BF'
-            }}
-          >
-            Edit Content
-          </Button>
-        </Box>
-      )}
-    </Paper>
-  );
-
   const renderSentStatus = () => (
     <Paper sx={{ p: 4, bgcolor: '#e3f2fd', border: '1px solid #bbdefb', borderRadius: 3 }}>
       <Typography variant="h6" sx={{ fontWeight: 600, mb: 3, color: '#1565c0' }}>
@@ -450,13 +363,12 @@ const PostStatusRenderer: React.FC<PostStatusRendererProps> = ({ post, onUpdate 
     </Paper>
   );
 
-  // Render based on post status
+  // Don't render anything for draft, sent, or confirmed status - keep the UI clean
+  if (post.status === 'draft' || post.status === 'sent' || post.status === 'confirmed') {
+    return null;
+  }
+
   switch (post.status) {
-    case 'draft':
-      return renderDraftStatus();
-    case 'confirmed':
-    case 'sent':
-      return renderSentStatus();
     case 'processing':
       return renderOngoingStatus();
     case 'completed':

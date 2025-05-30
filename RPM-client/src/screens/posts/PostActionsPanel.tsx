@@ -35,9 +35,16 @@ import { RequestSummary, useRequest } from '../../contexts/RequestContext';
 interface PostActionsPanelProps {
   post: RequestSummary;
   onUpdate: (post: RequestSummary) => void;
+  showOriginalContent?: boolean;
+  onToggleOriginalContent?: () => void;
 }
 
-const PostActionsPanel: React.FC<PostActionsPanelProps> = ({ post, onUpdate }) => {
+const PostActionsPanel: React.FC<PostActionsPanelProps> = ({ 
+  post, 
+  onUpdate, 
+  showOriginalContent = false,
+  onToggleOriginalContent 
+}) => {
   const navigate = useNavigate();
   const { updateRequestStatus } = useRequest();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -126,18 +133,9 @@ const PostActionsPanel: React.FC<PostActionsPanelProps> = ({ post, onUpdate }) =
   const getAvailableActions = () => {
     const actions = [];
 
-    // Common actions
-    actions.push({
-      label: 'Contact Support',
-      icon: <SupportIcon />,
-      onClick: handleContactSupport,
-      variant: 'outlined' as const,
-      color: 'inherit' as const,
-    });
-
     switch (post.status) {
       case 'draft':
-        actions.unshift(
+        actions.push(
           {
             label: 'Edit Post',
             icon: <EditIcon />,
@@ -151,9 +149,7 @@ const PostActionsPanel: React.FC<PostActionsPanelProps> = ({ post, onUpdate }) =
             onClick: handleSendPost,
             variant: 'contained' as const,
             color: 'success' as const,
-          }
-        );
-        actions.push(
+          },
           {
             label: 'Delete Draft',
             icon: <DeleteIcon />,
@@ -166,22 +162,13 @@ const PostActionsPanel: React.FC<PostActionsPanelProps> = ({ post, onUpdate }) =
 
       case 'confirmed':
       case 'sent':
-        actions.unshift(
+        actions.push(
           {
             label: 'View Details',
             icon: <ViewIcon />,
             onClick: handleEdit,
             variant: 'contained' as const,
             color: 'primary' as const,
-          }
-        );
-        actions.push(
-          {
-            label: 'Cancel Post',
-            icon: <CancelIcon />,
-            onClick: handleCancel,
-            variant: 'outlined' as const,
-            color: 'warning' as const,
           },
           {
             label: 'Repost',
@@ -194,16 +181,40 @@ const PostActionsPanel: React.FC<PostActionsPanelProps> = ({ post, onUpdate }) =
         break;
 
       case 'processing':
-        actions.unshift(
+        actions.push(
           {
             label: 'View Payment Info',
             icon: <PaymentIcon />,
             onClick: handleViewPayment,
             variant: 'contained' as const,
             color: 'primary' as const,
-          }
-        );
-        actions.push(
+          },
+          {
+            label: showOriginalContent ? 'Hide Posting' : 'Edit Post',
+            icon: <EditIcon />,
+            onClick: () => {
+              if (onToggleOriginalContent) {
+                onToggleOriginalContent();
+              }
+            },
+            variant: 'contained' as const,
+            color: 'secondary' as const,
+          },
+          {
+            label: 'View Progress',
+            icon: <ViewIcon />,
+            onClick: () => {
+              // Scroll to progress section for better UX
+              const progressSection = document.querySelector('[data-progress-section]');
+              if (progressSection) {
+                progressSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              } else {
+                console.log('Viewing detailed progress for ongoing project');
+              }
+            },
+            variant: 'outlined' as const,
+            color: 'primary' as const,
+          },
           {
             label: 'Repost',
             icon: <RepostIcon />,
@@ -215,7 +226,7 @@ const PostActionsPanel: React.FC<PostActionsPanelProps> = ({ post, onUpdate }) =
         break;
 
       case 'completed':
-        actions.unshift(
+        actions.push(
           {
             label: 'View Invoice',
             icon: <InvoiceIcon />,
@@ -229,9 +240,18 @@ const PostActionsPanel: React.FC<PostActionsPanelProps> = ({ post, onUpdate }) =
             onClick: handleDownloadAssets,
             variant: 'contained' as const,
             color: 'success' as const,
-          }
-        );
-        actions.push(
+          },
+          {
+            label: showOriginalContent ? 'Hide Posting' : 'View Posting',
+            icon: <ViewIcon />,
+            onClick: () => {
+              if (onToggleOriginalContent) {
+                onToggleOriginalContent();
+              }
+            },
+            variant: 'outlined' as const,
+            color: 'primary' as const,
+          },
           {
             label: 'Repost',
             icon: <RepostIcon />,

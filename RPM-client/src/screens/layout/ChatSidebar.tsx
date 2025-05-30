@@ -50,7 +50,7 @@ const postStatusItems = [
 const systemMenuItems = [
   { to: "/markets", text: "Marketplace", icon: <StorefrontIcon /> },
   { to: "/billing", text: "Billing & Invoices", icon: <ReceiptIcon /> },
-  { to: "/support", text: "Contact Salesman", icon: <SupportAgentIcon /> },
+  { to: "/support", text: "Support", icon: <SupportAgentIcon /> },
 ];
 
 export default function ChatSidebar({ 
@@ -118,7 +118,7 @@ export default function ChatSidebar({
   }, [isResizing, handleMouseMove, handleMouseUp]);
 
   const handleToggle = () => {
-    const newWidth = isCollapsed ? 280 : 72;
+    const newWidth = isCollapsed ? 240 : 72;
     onWidthChange(newWidth);
   };
 
@@ -132,8 +132,8 @@ export default function ChatSidebar({
     return requestHistory.filter(request => statuses.includes(request.status)).length;
   };
 
-  // If salesman user, don't show sidebar
-  if (user?.userType === 'salesman') {
+  // Always show sidebar for all authenticated users
+  if (!isAuthenticated) {
     return null;
   }
 
@@ -158,7 +158,8 @@ export default function ChatSidebar({
         <Box sx={{ overflow: 'auto', pt: 0, height: '100%' }}>
           {/* Top Bar with Logo and Toggle Button */}
           <Box sx={{ 
-            p: 1, 
+            px: 4, // Standard horizontal padding  
+            py: 1,
             borderBottom: '1px solid #e0e0e0',
             display: 'flex',
             alignItems: 'center',
@@ -172,7 +173,6 @@ export default function ChatSidebar({
                   display: 'flex',
                   alignItems: 'center',
                   cursor: 'pointer',
-                  marginLeft: 8,
                   '&:hover': {
                     opacity: 0.8,
                   },
@@ -216,7 +216,7 @@ export default function ChatSidebar({
 
           {/* New Post Button */}
           {isAuthenticated && (
-            <Box sx={{ p: 2 }}>
+            <Box sx={{ px: 2, py: 2 }}> {/* Match the same horizontal padding */}
               <Tooltip 
                 title={isCollapsed ? "New Post" : ""} 
                 placement="right"
@@ -227,7 +227,7 @@ export default function ChatSidebar({
                   onClick={handleNewChat}
                   startIcon={!isCollapsed ? <AddIcon /> : null}
                   sx={{
-                    width: '100%',
+                    width: '100%', // Use full width within the container
                     justifyContent: isCollapsed ? 'center' : 'flex-start',
                     bgcolor: '#7442BF',
                     color: 'white',
@@ -303,11 +303,11 @@ export default function ChatSidebar({
                                 </Typography>
                                 {count > 0 && (
                                   <Typography variant="caption" sx={{ 
-                                    bgcolor: item.isInbox && count > 0 ? '#ff4444' : isSelected ? '#7442BF' : '#6c757d',
-                                    color: 'white',
-                                    borderRadius: '12px',
-                                    px: 1,
-                                    py: 0.25,
+                                    bgcolor: item.isInbox && count > 0 ? '#7442BF' : 'transparent',
+                                    color: item.isInbox && count > 0 ? 'white' : 'text.secondary',
+                                    borderRadius: item.isInbox && count > 0 ? '12px' : 0,
+                                    px: item.isInbox && count > 0 ? 1 : 0,
+                                    py: item.isInbox && count > 0 ? 0.25 : 0,
                                     fontSize: '0.7rem',
                                     fontWeight: 600,
                                     minWidth: '20px',

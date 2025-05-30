@@ -155,19 +155,16 @@ const PostListView: React.FC<PostListViewProps> = () => {
   };
 
   const getStatusColor = (status: string): 'default' | 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning' => {
-    switch (status) {
-      case 'draft':
-        return 'default';
-      case 'confirmed':
-      case 'sent':
-        return 'info';
-      case 'processing':
-        return 'warning';
-      case 'completed':
-        return 'success';
-      default:
-        return 'default';
+    // All status chips now use default gray styling for consistency
+    return 'default';
+  };
+
+  const getStatusDisplay = (status: string): string => {
+    // Convert "processing" status to "ONGOING" for display
+    if (status === 'processing') {
+      return 'ONGOING';
     }
+    return status.toUpperCase();
   };
 
   const handlePostClick = (postId: string) => {
@@ -233,10 +230,18 @@ const PostListView: React.FC<PostListViewProps> = () => {
         >
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flex: 1 }}>
             <Chip 
-              label={post.status.toUpperCase()}
+              label={getStatusDisplay(post.status)}
               color={getStatusColor(post.status)}
               size="small"
-              sx={{ fontWeight: 600, minWidth: 80 }}
+              sx={{ 
+                fontWeight: 600, 
+                minWidth: 80,
+                bgcolor: '#E0E0E0',
+                color: '#666',
+                '& .MuiChip-label': {
+                  fontWeight: 600
+                }
+              }}
             />
             <Typography 
               variant="body1" 
@@ -294,10 +299,17 @@ const PostListView: React.FC<PostListViewProps> = () => {
         >
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
             <Chip 
-              label={post.status.toUpperCase()}
+              label={getStatusDisplay(post.status)}
               color={getStatusColor(post.status)}
               size="small"
-              sx={{ fontWeight: 600 }}
+              sx={{ 
+                fontWeight: 600,
+                bgcolor: '#E0E0E0',
+                color: '#666',
+                '& .MuiChip-label': {
+                  fontWeight: 600
+                }
+              }}
             />
             <IconButton
               size="small"
@@ -388,10 +400,17 @@ const PostListView: React.FC<PostListViewProps> = () => {
           <CardContent sx={{ flex: 1, p: 3 }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
               <Chip 
-                label={post.status.toUpperCase()}
+                label={getStatusDisplay(post.status)}
                 color={getStatusColor(post.status)}
                 size="small"
-                sx={{ fontWeight: 600 }}
+                sx={{ 
+                  fontWeight: 600,
+                  bgcolor: '#E0E0E0',
+                  color: '#666',
+                  '& .MuiChip-label': {
+                    fontWeight: 600
+                  }
+                }}
               />
               <IconButton
                 size="small"
@@ -441,7 +460,7 @@ const PostListView: React.FC<PostListViewProps> = () => {
       <Paper sx={{ 
         p: 2, 
         mb: 4, 
-        background: `linear-gradient(135deg, ${config.color} 0%, ${config.color}CC 100%)`, 
+        background: '#7442BF', 
         color: 'white' 
       }}>
         <Box sx={{ 
@@ -450,12 +469,14 @@ const PostListView: React.FC<PostListViewProps> = () => {
           justifyContent: 'space-between' 
         }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            {config.icon}
-            <Typography variant="h5" sx={{ fontWeight: 600 }}>
+            <Box sx={{ color: 'white' }}>
+              {config.icon}
+            </Box>
+            <Typography variant="h5" sx={{ fontWeight: 600, color: 'white' }}>
               {config.title}
             </Typography>
           </Box>
-          <Typography variant="h6" sx={{ opacity: 0.9, fontWeight: 500 }}>
+          <Typography variant="h6" sx={{ opacity: 0.9, fontWeight: 500, color: 'white' }}>
             {sortedPosts.length} posts
           </Typography>
         </Box>
