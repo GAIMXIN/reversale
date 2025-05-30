@@ -25,8 +25,10 @@ import DraftsOutlinedIcon from '@mui/icons-material/DraftsOutlined';
 import SendOutlinedIcon from '@mui/icons-material/SendOutlined';
 import PendingActionsOutlinedIcon from '@mui/icons-material/PendingActionsOutlined';
 import CheckCircleOutlinedIcon from '@mui/icons-material/CheckCircleOutlined';
+import InboxIcon from '@mui/icons-material/Inbox';
 import { useAuth } from '../../contexts/AuthContext';
 import { useRequest } from '../../contexts/RequestContext';
+import logo from '../../assests/img/logo.png';
 
 interface ChatSidebarProps {
   width: number;
@@ -37,6 +39,7 @@ interface ChatSidebarProps {
 
 // Post status navigation items
 const postStatusItems = [
+  { to: "/inbox", text: "Inbox", icon: <InboxIcon />, status: [], isInbox: true },
   { to: "/posts/status/draft", text: "Drafts", icon: <DraftsOutlinedIcon />, status: ['draft'] },
   { to: "/posts/status/sent", text: "Sent", icon: <SendOutlinedIcon />, status: ['confirmed', 'sent'] },
   { to: "/posts/status/ongoing", text: "Ongoing", icon: <PendingActionsOutlinedIcon />, status: ['processing'] },
@@ -59,7 +62,7 @@ export default function ChatSidebar({
   const location = useLocation();
   const navigate = useNavigate();
   const { isAuthenticated, user } = useAuth();
-  const { requestHistory } = useRequest();
+  const { requestHistory, getInboxUnreadCount } = useRequest();
   const [isResizing, setIsResizing] = useState(false);
 
   // Determine if sidebar is in collapsed state based on width
@@ -153,24 +156,62 @@ export default function ChatSidebar({
         }}
       >
         <Box sx={{ overflow: 'auto', pt: 0, height: '100%' }}>
-          {/* Toggle Button */}
+          {/* Top Bar with Logo and Toggle Button */}
           <Box sx={{ 
-            display: 'flex', 
-            justifyContent: isCollapsed ? 'center' : 'flex-end',
-            p: 1,
-            borderBottom: '1px solid #e0e0e0'
+            p: 1, 
+            borderBottom: '1px solid #e0e0e0',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: isCollapsed ? 'center' : 'space-between',
+            minHeight: 20,
           }}>
-            <IconButton 
-              onClick={handleToggle}
-              sx={{ 
-                color: '#7442BF',
-                '&:hover': {
-                  backgroundColor: 'rgba(116, 66, 191, 0.1)',
-                }
-              }}
+            {/* Logo - only show when expanded */}
+            {!isCollapsed && (
+              <Box 
+                sx={{ 
+                  display: 'flex',
+                  alignItems: 'center',
+                  cursor: 'pointer',
+                  marginLeft: 8,
+                  '&:hover': {
+                    opacity: 0.8,
+                  },
+                  transition: 'opacity 0.2s ease',
+                }}
+                onClick={() => navigate('/')}
+              >
+                <Box 
+                  component="img" 
+                  src={logo} 
+                  alt="ReverSale" 
+                  sx={{ 
+                    height: 40,
+                    width: 'auto',
+                    maxWidth: 140,
+                    objectFit: 'contain',
+                  }} 
+                />
+              </Box>
+            )}
+
+            {/* Toggle Button */}
+            <Tooltip 
+              title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"} 
+              placement="right"
+              arrow
             >
-              {isCollapsed ? <MenuIcon /> : <ChevronLeftIcon />}
-            </IconButton>
+              <IconButton 
+                onClick={handleToggle}
+                sx={{ 
+                  color: '#7442BF',
+                  '&:hover': {
+                    backgroundColor: 'rgba(116, 66, 191, 0.1)',
+                  }
+                }}
+              >
+                {isCollapsed ? <MenuIcon /> : <ChevronLeftIcon />}
+              </IconButton>
+            </Tooltip>
           </Box>
 
           {/* New Post Button */}
@@ -210,13 +251,13 @@ export default function ChatSidebar({
           {isAuthenticated && (
             <List sx={{ pt: 1, px: 2 }}>
               {postStatusItems.map((item) => {
-                const count = getPostCount(item.status);
+                const count = item.isInbox ? getInboxUnreadCount() : getPostCount(item.status);
                 const isSelected = location.pathname === item.to || location.pathname.startsWith(item.to);
                 
                 return (
                   <ListItem key={item.text} disablePadding sx={{ mb: 0.5 }}>
                     <Tooltip 
-                      title={isCollapsed ? `${item.text} (${count})` : ''} 
+                      title={isCollapsed ? `${item.text}${count > 0 ? ` (${count})` : ''}` : ''} 
                       placement="right"
                       arrow
                     >
@@ -262,7 +303,7 @@ export default function ChatSidebar({
                                 </Typography>
                                 {count > 0 && (
                                   <Typography variant="caption" sx={{ 
-                                    bgcolor: isSelected ? '#7442BF' : '#6c757d',
+                                    bgcolor: item.isInbox && count > 0 ? '#ff4444' : isSelected ? '#7442BF' : '#6c757d',
                                     color: 'white',
                                     borderRadius: '12px',
                                     px: 1,

@@ -14,11 +14,13 @@ import Billing from './screens/billing/Billing';
 import RequestReview from './screens/requestReview/RequestReview';
 import PostListView from './screens/posts/PostListView';
 import PostDetailPage from './screens/posts/PostDetailPage';
+import Inbox from './screens/inbox/Inbox';
 import MainLayout from './screens/layout/MainLayout';
 import SalesmanLayout from './screens/layout/SalesmanLayout';
 import ChatScreen from './screens/chat/ChatScreen';
 import SalesmanChatScreen from './screens/chat/SalesmanChatScreen';
 import ChatLayout from './screens/layout/ChatLayout';
+import './App.css';
 
 // Protected Chat Component for regular users
 const ProtectedChat: React.FC = () => {
@@ -82,7 +84,7 @@ function App() {
                 path="/posts/:id" 
                 element={
                   <ProtectedRoute allowedUserTypes={['test']}>
-                    <ChatLayout><PostDetailPage /></ChatLayout>
+                    <PostDetailPage />
                   </ProtectedRoute>
                 } 
               />
@@ -102,6 +104,16 @@ function App() {
               <Route path="/posts/sent" element={<Navigate to="/posts/status/sent" replace />} />
               <Route path="/posts/ongoing" element={<Navigate to="/posts/status/ongoing" replace />} />
               <Route path="/posts/completed" element={<Navigate to="/posts/status/completed" replace />} />
+              
+              {/* Inbox Route */}
+              <Route 
+                path="/inbox" 
+                element={
+                  <ProtectedRoute allowedUserTypes={['test']}>
+                    <ChatLayout><Inbox /></ChatLayout>
+                  </ProtectedRoute>
+                } 
+              />
               
               <Route 
                 path="/contact-salesman" 

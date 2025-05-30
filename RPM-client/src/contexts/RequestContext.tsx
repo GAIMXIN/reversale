@@ -15,6 +15,18 @@ export interface RequestSummary {
   lastModified: Date;
 }
 
+// Notification data model
+export interface InboxNotification {
+  id: string;
+  type: 'response' | 'status' | 'agent';
+  postId: string;
+  postTitle: string;
+  message: string;
+  createdAt: Date;
+  read: boolean;
+}
+
+// Request Context with Inbox functionality
 interface RequestContextType {
   currentRequest: RequestSummary | null;
   requestHistory: RequestSummary[];
@@ -22,6 +34,7 @@ interface RequestContextType {
   createRequestFromText: (text: string) => Promise<RequestSummary>;
   updateRequestStatus: (id: string, status: RequestSummary['status']) => void;
   getRequestById: (id: string) => RequestSummary | undefined;
+  getInboxUnreadCount: () => number;
 }
 
 const RequestContext = createContext<RequestContextType | undefined>(undefined);
@@ -284,6 +297,11 @@ export const RequestProvider: React.FC<RequestProviderProps> = ({ children }) =>
     return requestHistory.find(request => request.id === id);
   };
 
+  const getInboxUnreadCount = (): number => {
+    // Mock unread count for now - this would be from actual notification data
+    return 3;
+  };
+
   return (
     <RequestContext.Provider value={{
       currentRequest,
@@ -292,6 +310,7 @@ export const RequestProvider: React.FC<RequestProviderProps> = ({ children }) =>
       createRequestFromText,
       updateRequestStatus,
       getRequestById,
+      getInboxUnreadCount,
     }}>
       {children}
     </RequestContext.Provider>

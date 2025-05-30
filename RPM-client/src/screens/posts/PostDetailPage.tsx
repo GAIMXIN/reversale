@@ -14,10 +14,12 @@ import {
   CalendarMonth as CalendarIcon,
   Person as PersonIcon,
   AttachMoney as PaymentIcon,
+  ArrowBack as ArrowBackIcon,
 } from '@mui/icons-material';
 import { useRequest, RequestSummary } from '../../contexts/RequestContext';
 import PostActionsPanel from './PostActionsPanel';
 import PostStatusRenderer from './PostStatusRenderer';
+import PostDetailLayout from './PostDetailLayout';
 
 interface PostDetailPageProps {}
 
@@ -84,243 +86,257 @@ const PostDetailPage: React.FC<PostDetailPageProps> = () => {
     }
   };
 
+  const getBackNavigationInfo = (status: string) => {
+    switch (status) {
+      case 'draft':
+        return { label: '← Back to Drafts', path: '/posts/status/draft' };
+      case 'confirmed':
+      case 'sent':
+        return { label: '← Back to Sent', path: '/posts/status/sent' };
+      case 'processing':
+        return { label: '← Back to Ongoing', path: '/posts/status/ongoing' };
+      case 'completed':
+        return { label: '← Back to Completed', path: '/posts/status/completed' };
+      default:
+        return { label: '← Back to Posts', path: '/posts/status/draft' };
+    }
+  };
+
+  const handleBackNavigation = () => {
+    if (post) {
+      const backInfo = getBackNavigationInfo(post.status);
+      navigate(backInfo.path);
+    }
+  };
+
   if (loading) {
     return (
-      <Box sx={{ 
-        display: 'flex', 
-        width: '100%',
-        minHeight: '100vh',
-        bgcolor: '#fafafa'
-      }}>
-        {/* Main Content Area Skeleton */}
-        <Box sx={{ 
-          flex: 1, 
-          maxWidth: 'calc(100% - 400px)',
-          p: 4,
-          ml: '280px' // Account for sidebar width
-        }}>
-          <Skeleton variant="text" width="60%" height={60} />
-          <Skeleton variant="text" width="30%" height={30} sx={{ mt: 2 }} />
-          <Skeleton variant="rectangular" width="100%" height={400} sx={{ mt: 3 }} />
-        </Box>
-        
-        {/* Action Panel Skeleton */}
-        <Box sx={{ 
-          width: 320,
-          position: 'fixed',
-          right: 0,
-          top: 64,
-          bottom: 0,
-          p: 3,
-          bgcolor: 'white',
-          borderLeft: '1px solid #e0e0e0'
-        }}>
-          <Skeleton variant="rectangular" width="100%" height={400} />
-        </Box>
-      </Box>
+      <PostDetailLayout 
+        rightSidebar={<Skeleton variant="rectangular" width="100%" height={400} />}
+      >
+        <Skeleton variant="text" width="60%" height={60} />
+        <Skeleton variant="text" width="30%" height={30} sx={{ mt: 2 }} />
+        <Skeleton variant="rectangular" width="100%" height={400} sx={{ mt: 3 }} />
+      </PostDetailLayout>
     );
   }
 
   if (!post) {
     return (
-      <Box sx={{ 
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        minHeight: '50vh',
-        ml: '280px' // Account for sidebar
-      }}>
-        <Alert severity="error" sx={{ maxWidth: 600 }}>
-          <Typography variant="h6" gutterBottom>
-            Post Not Found
-          </Typography>
-          <Typography variant="body2" sx={{ mb: 2 }}>
-            The post you're looking for doesn't exist or has been removed.
-          </Typography>
-          <Button 
-            variant="contained" 
-            onClick={() => navigate('/posts/draft')}
-            sx={{ bgcolor: '#7442BF' }}
-          >
-            Back to Posts
-          </Button>
-        </Alert>
-      </Box>
+      <PostDetailLayout rightSidebar={<Box />}>
+        <Box sx={{ 
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          minHeight: '50vh'
+        }}>
+          <Alert severity="error" sx={{ maxWidth: 600 }}>
+            <Typography variant="h6" gutterBottom>
+              Post Not Found
+            </Typography>
+            <Typography variant="body2" sx={{ mb: 2 }}>
+              The post you're looking for doesn't exist or has been removed.
+            </Typography>
+            <Button 
+              variant="contained" 
+              onClick={() => navigate('/posts/status/draft')}
+              sx={{ bgcolor: '#7442BF' }}
+            >
+              Back to Posts
+            </Button>
+          </Alert>
+        </Box>
+      </PostDetailLayout>
     );
   }
 
-  return (
-    <Box sx={{ 
-      display: 'flex',
-      width: '100%',
-      minHeight: '100vh',
-      bgcolor: '#fafafa'
-    }}>
-      {/* Main Content Area */}
-      <Box sx={{ 
-        flex: 1,
-        maxWidth: 'calc(100% - 400px)',
-        p: 4,
-        ml: '280px' // Account for sidebar width
-      }}>
-        {/* Header Section */}
-        <Paper sx={{ p: 4, mb: 3, bgcolor: 'white' }}>
-          {/* Status and Metadata */}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
-            <Chip 
-              label={getStatusLabel(post.status)}
-              color={getStatusColor(post.status)}
-              sx={{ fontWeight: 600 }}
-            />
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'text.secondary' }}>
-              <CalendarIcon sx={{ fontSize: 18 }} />
-              <Typography variant="body2">
-                Posted on {formatDate(post.createdAt)}
-              </Typography>
-            </Box>
-          </Box>
-
-          {/* Post Title */}
-          <Typography 
-            variant="h3" 
-            sx={{ 
-              fontWeight: 700,
-              mb: 2,
-              color: '#1a1a1a',
-              lineHeight: 1.2
-            }}
-          >
-            {post.title}
-          </Typography>
-
-          {/* Post Metadata */}
-          <Box sx={{ 
-            display: 'flex', 
-            gap: 4, 
+  const mainContent = (
+    <>
+      {/* Back Navigation Button */}
+      {post && (
+        <Button
+          onClick={handleBackNavigation}
+          startIcon={<ArrowBackIcon />}
+          sx={{
             mb: 3,
-            color: 'text.secondary'
-          }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <PaymentIcon sx={{ fontSize: 18 }} />
-              <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                Budget: ${post.estPrice.toLocaleString()}
-              </Typography>
-            </Box>
+            color: '#666',
+            textTransform: 'none',
+            fontWeight: 600,
+            fontSize: '0.95rem',
+            px: 0,
+            '&:hover': {
+              bgcolor: 'transparent',
+              color: '#7442BF',
+            },
+            alignSelf: 'flex-start'
+          }}
+        >
+          {getBackNavigationInfo(post.status).label}
+        </Button>
+      )}
+
+      {/* Header Section */}
+      <Paper sx={{ p: 4, mb: 3, bgcolor: 'white', borderRadius: 3 }}>
+        {/* Status and Metadata */}
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
+          <Chip 
+            label={getStatusLabel(post.status)}
+            color={getStatusColor(post.status)}
+            sx={{ fontWeight: 600 }}
+          />
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'text.secondary' }}>
+            <CalendarIcon sx={{ fontSize: 18 }} />
             <Typography variant="body2">
-              Timeline: {post.estETA}
+              Posted on {formatDate(post.createdAt)}
             </Typography>
           </Box>
+        </Box>
 
-          <Divider sx={{ my: 3 }} />
+        {/* Post Title */}
+        <Typography 
+          variant="h3" 
+          sx={{ 
+            fontWeight: 700,
+            mb: 2,
+            color: '#1a1a1a',
+            lineHeight: 1.2
+          }}
+        >
+          {post.title}
+        </Typography>
 
-          {/* Post Description */}
-          <Typography 
-            variant="h6" 
-            sx={{ 
-              fontWeight: 600,
-              mb: 2,
-              color: '#333'
-            }}
-          >
-            Description
+        {/* Post Metadata */}
+        <Box sx={{ 
+          display: 'flex', 
+          gap: 4, 
+          mb: 3,
+          color: 'text.secondary'
+        }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <PaymentIcon sx={{ fontSize: 18 }} />
+            <Typography variant="body2" sx={{ fontWeight: 600 }}>
+              Budget: ${post.estPrice.toLocaleString()}
+            </Typography>
+          </Box>
+          <Typography variant="body2">
+            Timeline: {post.estETA}
           </Typography>
-          <Typography 
-            variant="body1" 
-            sx={{ 
-              lineHeight: 1.7,
-              mb: 3,
-              whiteSpace: 'pre-wrap'
-            }}
-          >
-            {post.problem}
-          </Typography>
+        </Box>
 
-          {/* Desired Outcome */}
-          {post.desiredOutcome && (
-            <>
-              <Typography 
-                variant="h6" 
-                sx={{ 
-                  fontWeight: 600,
-                  mb: 2,
-                  color: '#333'
-                }}
-              >
-                Desired Outcome
-              </Typography>
-              <Typography 
-                variant="body1" 
-                sx={{ 
-                  lineHeight: 1.7,
-                  mb: 3,
-                  whiteSpace: 'pre-wrap'
-                }}
-              >
-                {post.desiredOutcome}
-              </Typography>
-            </>
-          )}
+        <Divider sx={{ my: 3 }} />
 
-          {/* Impact */}
-          {post.impact && (
-            <>
-              <Typography 
-                variant="h6" 
-                sx={{ 
-                  fontWeight: 600,
-                  mb: 2,
-                  color: '#333'
-                }}
-              >
-                Expected Impact
-              </Typography>
-              <Typography 
-                variant="body1" 
-                sx={{ 
-                  lineHeight: 1.7,
-                  mb: 3,
-                  whiteSpace: 'pre-wrap'
-                }}
-              >
-                {post.impact}
-              </Typography>
-            </>
-          )}
-        </Paper>
+        {/* Post Description */}
+        <Typography 
+          variant="h6" 
+          sx={{ 
+            fontWeight: 600,
+            mb: 2,
+            color: '#333'
+          }}
+        >
+          Description
+        </Typography>
+        <Typography 
+          variant="body1" 
+          sx={{ 
+            lineHeight: 1.7,
+            mb: 3,
+            whiteSpace: 'pre-wrap'
+          }}
+        >
+          {post.problem}
+        </Typography>
 
-        {/* Status-specific Content */}
-        <PostStatusRenderer post={post} onUpdate={setPost} />
-
-        {/* Agent Summary Section (Optional Future Enhancement) */}
-        {post.originalText && (
-          <Paper sx={{ p: 4, mt: 3, bgcolor: '#f8f9ff', border: '1px solid #e3e7ff' }}>
+        {/* Desired Outcome */}
+        {post.desiredOutcome && (
+          <>
             <Typography 
               variant="h6" 
               sx={{ 
                 fontWeight: 600,
                 mb: 2,
-                color: '#7442BF'
+                color: '#333'
               }}
             >
-              💡 AI Agent Summary
+              Desired Outcome
             </Typography>
             <Typography 
-              variant="body2" 
+              variant="body1" 
               sx={{ 
-                lineHeight: 1.6,
-                color: '#5a5a5a',
-                fontStyle: 'italic'
+                lineHeight: 1.7,
+                mb: 3,
+                whiteSpace: 'pre-wrap'
               }}
             >
-              This post was automatically processed and structured from: "{post.originalText.substring(0, 200)}..."
+              {post.desiredOutcome}
             </Typography>
-          </Paper>
+          </>
         )}
-      </Box>
 
-      {/* Right Action Panel */}
-      <PostActionsPanel post={post} onUpdate={setPost} />
-    </Box>
+        {/* Impact */}
+        {post.impact && (
+          <>
+            <Typography 
+              variant="h6" 
+              sx={{ 
+                fontWeight: 600,
+                mb: 2,
+                color: '#333'
+              }}
+            >
+              Expected Impact
+            </Typography>
+            <Typography 
+              variant="body1" 
+              sx={{ 
+                lineHeight: 1.7,
+                mb: 3,
+                whiteSpace: 'pre-wrap'
+              }}
+            >
+              {post.impact}
+            </Typography>
+          </>
+        )}
+      </Paper>
+
+      {/* Status-specific Content */}
+      <PostStatusRenderer post={post} onUpdate={setPost} />
+
+      {/* Agent Summary Section (Optional Future Enhancement) */}
+      {post.originalText && (
+        <Paper sx={{ p: 4, mt: 3, bgcolor: '#f8f9ff', border: '1px solid #e3e7ff', borderRadius: 3 }}>
+          <Typography 
+            variant="h6" 
+            sx={{ 
+              fontWeight: 600,
+              mb: 2,
+              color: '#7442BF'
+            }}
+          >
+            💡 AI Agent Summary
+          </Typography>
+          <Typography 
+            variant="body2" 
+            sx={{ 
+              lineHeight: 1.6,
+              color: '#5a5a5a',
+              fontStyle: 'italic'
+            }}
+          >
+            This post was automatically processed and structured from: "{post.originalText.substring(0, 200)}..."
+          </Typography>
+        </Paper>
+      )}
+    </>
+  );
+
+  const rightSidebar = <PostActionsPanel post={post} onUpdate={setPost} />;
+
+  return (
+    <PostDetailLayout rightSidebar={rightSidebar}>
+      {mainContent}
+    </PostDetailLayout>
   );
 };
 

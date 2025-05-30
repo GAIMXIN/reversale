@@ -32,38 +32,38 @@ import {
   SendOutlined,
   PendingActionsOutlined,
   CheckCircleOutlined,
+  List as ListIcon,
+  Subject as SummaryIcon,
+  GridView as ImageIcon,
 } from '@mui/icons-material';
 import { useRequest, RequestSummary } from '../../contexts/RequestContext';
 
 interface PostListViewProps {}
 
 type PostStatus = 'draft' | 'sent' | 'ongoing' | 'completed';
+type ViewMode = 'list' | 'summary' | 'card';
 
 const statusConfig = {
   draft: {
     title: 'Draft Posts',
-    description: 'Posts that are still being worked on',
     icon: <DraftsOutlined />,
     color: '#6c757d',
     statuses: ['draft']
   },
   sent: {
     title: 'Sent Posts',
-    description: 'Posts waiting to be matched',
     icon: <SendOutlined />,
     color: '#17a2b8',
     statuses: ['confirmed', 'sent']
   },
   ongoing: {
     title: 'Ongoing Posts',
-    description: 'Projects in progress',
     icon: <PendingActionsOutlined />,
     color: '#ffc107',
     statuses: ['processing']
   },
   completed: {
     title: 'Completed Posts',
-    description: 'Projects that are finished',
     icon: <CheckCircleOutlined />,
     color: '#28a745',
     statuses: ['completed']
@@ -81,6 +81,10 @@ const PostListView: React.FC<PostListViewProps> = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedPost, setSelectedPost] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<ViewMode>(() => {
+    const saved = localStorage.getItem('postListViewMode');
+    return (saved as ViewMode) || 'card';
+  });
 
   const postsPerPage = 12;
   
@@ -201,27 +205,260 @@ const PostListView: React.FC<PostListViewProps> = () => {
     handleMenuClose();
   };
 
+  const handleViewModeChange = (mode: ViewMode) => {
+    setViewMode(mode);
+    localStorage.setItem('postListViewMode', mode);
+    setCurrentPage(1); // Reset to first page when changing view
+  };
+
+  // Render posts in list view mode
+  const renderListView = () => (
+    <Paper sx={{ overflow: 'hidden' }}>
+      {paginatedPosts.map((post, index) => (
+        <Box
+          key={post.id}
+          onClick={() => handlePostClick(post.id)}
+          sx={{
+            p: 2,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            cursor: 'pointer',
+            borderBottom: index < paginatedPosts.length - 1 ? '1px solid #e0e0e0' : 'none',
+            '&:hover': {
+              bgcolor: 'rgba(116, 66, 191, 0.02)',
+            },
+            transition: 'background-color 0.2s ease',
+          }}
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flex: 1 }}>
+            <Chip 
+              label={post.status.toUpperCase()}
+              color={getStatusColor(post.status)}
+              size="small"
+              sx={{ fontWeight: 600, minWidth: 80 }}
+            />
+            <Typography 
+              variant="body1" 
+              sx={{ 
+                fontWeight: 500,
+                flex: 1,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap'
+              }}
+            >
+              {post.title}
+            </Typography>
+          </Box>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+            <Typography variant="body2" sx={{ fontWeight: 600, color: '#7442BF' }}>
+              {formatPrice(post.estPrice)}
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ minWidth: 100, textAlign: 'right' }}>
+              {formatDate(post.lastModified)}
+            </Typography>
+            <IconButton
+              size="small"
+              onClick={(e) => handleMoreClick(e, post.id)}
+              sx={{ opacity: 0.7, '&:hover': { opacity: 1 } }}
+            >
+              <MoreVertIcon fontSize="small" />
+            </IconButton>
+          </Box>
+        </Box>
+      ))}
+    </Paper>
+  );
+
+  // Render posts in summary view mode
+  const renderSummaryView = () => (
+    <Box sx={{ 
+      display: 'grid',
+      gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' },
+      gap: 3,
+    }}>
+      {paginatedPosts.map((post) => (
+        <Paper
+          key={post.id}
+          onClick={() => handlePostClick(post.id)}
+          sx={{
+            p: 3,
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+            '&:hover': {
+              transform: 'translateY(-2px)',
+              boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+            }
+          }}
+        >
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+            <Chip 
+              label={post.status.toUpperCase()}
+              color={getStatusColor(post.status)}
+              size="small"
+              sx={{ fontWeight: 600 }}
+            />
+            <IconButton
+              size="small"
+              onClick={(e) => handleMoreClick(e, post.id)}
+              sx={{ opacity: 0.7, '&:hover': { opacity: 1 } }}
+            >
+              <MoreVertIcon fontSize="small" />
+            </IconButton>
+          </Box>
+          
+          <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, lineHeight: 1.3 }}>
+            {post.title}
+          </Typography>
+          
+          <Typography 
+            variant="body2" 
+            color="text.secondary" 
+            sx={{ 
+              mb: 3,
+              display: '-webkit-box',
+              WebkitLineClamp: 3,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden',
+              lineHeight: 1.5
+            }}
+          >
+            {post.problem}
+          </Typography>
+          
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mb: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Typography variant="caption" color="text.secondary">Budget:</Typography>
+              <Typography variant="body2" sx={{ fontWeight: 600, color: '#7442BF' }}>
+                {formatPrice(post.estPrice)}
+              </Typography>
+            </Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Typography variant="caption" color="text.secondary">Timeline:</Typography>
+              <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                {post.estETA}
+              </Typography>
+            </Box>
+          </Box>
+          
+          <Typography variant="caption" color="text.secondary">
+            Last updated: {formatDate(post.lastModified)}
+          </Typography>
+        </Paper>
+      ))}
+    </Box>
+  );
+
+  // Render posts in card view mode (existing implementation with slight modifications)
+  const renderCardView = () => (
+    <Box sx={{ 
+      display: 'grid',
+      gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', lg: 'repeat(3, 1fr)' },
+      gap: 3,
+    }}>
+      {paginatedPosts.map((post) => (
+        <Card 
+          key={post.id}
+          sx={{ 
+            height: '100%', 
+            display: 'flex', 
+            flexDirection: 'column',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+            '&:hover': {
+              transform: 'translateY(-4px)',
+              boxShadow: '0 8px 25px rgba(0,0,0,0.1)',
+            }
+          }}
+          onClick={() => handlePostClick(post.id)}
+        >
+          {/* Thumbnail placeholder */}
+          <Box sx={{
+            height: 140,
+            bgcolor: '#f5f5f5',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderBottom: '1px solid #e0e0e0'
+          }}>
+            <ImageIcon sx={{ fontSize: 40, color: '#ccc' }} />
+          </Box>
+          
+          <CardContent sx={{ flex: 1, p: 3 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+              <Chip 
+                label={post.status.toUpperCase()}
+                color={getStatusColor(post.status)}
+                size="small"
+                sx={{ fontWeight: 600 }}
+              />
+              <IconButton
+                size="small"
+                onClick={(e) => handleMoreClick(e, post.id)}
+                sx={{ opacity: 0.7, '&:hover': { opacity: 1 } }}
+              >
+                <MoreVertIcon fontSize="small" />
+              </IconButton>
+            </Box>
+            
+            <Typography variant="h6" sx={{ fontWeight: 600, mb: 1, lineHeight: 1.3 }}>
+              {post.title}
+            </Typography>
+            
+            <Typography 
+              variant="body2" 
+              color="text.secondary" 
+              sx={{ 
+                mb: 2,
+                display: '-webkit-box',
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: 'vertical',
+                overflow: 'hidden',
+                lineHeight: 1.4
+              }}
+            >
+              {post.problem}
+            </Typography>
+            
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 'auto' }}>
+              <Typography variant="body2" sx={{ fontWeight: 600, color: '#7442BF' }}>
+                {formatPrice(post.estPrice)}
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                {formatDate(post.lastModified)}
+              </Typography>
+            </Box>
+          </CardContent>
+        </Card>
+      ))}
+    </Box>
+  );
+
   return (
     <Box sx={{ mt: 8, mb: 4 }}>
       {/* Header */}
       <Paper sx={{ 
-        p: 4, 
+        p: 2, 
         mb: 4, 
         background: `linear-gradient(135deg, ${config.color} 0%, ${config.color}CC 100%)`, 
         color: 'white' 
       }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-          {config.icon}
-          <Typography variant="h4" sx={{ fontWeight: 600 }}>
-            {config.title}
+        <Box sx={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'space-between' 
+        }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            {config.icon}
+            <Typography variant="h5" sx={{ fontWeight: 600 }}>
+              {config.title}
+            </Typography>
+          </Box>
+          <Typography variant="h6" sx={{ opacity: 0.9, fontWeight: 500 }}>
+            {sortedPosts.length} posts
           </Typography>
         </Box>
-        <Typography variant="body1" sx={{ opacity: 0.9, mb: 2 }}>
-          {config.description}
-        </Typography>
-        <Typography variant="h6" sx={{ opacity: 0.8 }}>
-          {sortedPosts.length} posts
-        </Typography>
       </Paper>
 
       {/* Filters and Search */}
@@ -230,47 +467,107 @@ const PostListView: React.FC<PostListViewProps> = () => {
           display: 'flex', 
           gap: 2, 
           alignItems: 'center',
+          justifyContent: 'space-between',
           flexWrap: 'wrap'
         }}>
-          <TextField
-            placeholder="Search posts..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            size="small"
-            sx={{ minWidth: 250 }}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon />
-                </InputAdornment>
-              ),
-            }}
-          />
-          
-          <FormControl size="small" sx={{ minWidth: 120 }}>
-            <InputLabel>Sort by</InputLabel>
-            <Select
-              value={sortBy}
-              label="Sort by"
-              onChange={(e) => setSortBy(e.target.value as any)}
+          <Box sx={{ 
+            display: 'flex', 
+            gap: 2, 
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            flex: 1
+          }}>
+            <TextField
+              placeholder="Search posts..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              size="small"
+              sx={{ minWidth: 250 }}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon />
+                  </InputAdornment>
+                ),
+              }}
+            />
+            
+            <FormControl size="small" sx={{ minWidth: 120 }}>
+              <InputLabel>Sort by</InputLabel>
+              <Select
+                value={sortBy}
+                label="Sort by"
+                onChange={(e) => setSortBy(e.target.value as any)}
+              >
+                <MenuItem value="date">Date</MenuItem>
+                <MenuItem value="title">Title</MenuItem>
+                <MenuItem value="price">Price</MenuItem>
+              </Select>
+            </FormControl>
+            
+            <FormControl size="small" sx={{ minWidth: 100 }}>
+              <InputLabel>Order</InputLabel>
+              <Select
+                value={sortOrder}
+                label="Order"
+                onChange={(e) => setSortOrder(e.target.value as any)}
+              >
+                <MenuItem value="desc">Desc</MenuItem>
+                <MenuItem value="asc">Asc</MenuItem>
+              </Select>
+            </FormControl>
+          </Box>
+
+          {/* View Mode Toggle */}
+          <Box sx={{ 
+            display: 'flex', 
+            p: 1, 
+            borderRadius: 2,
+            bgcolor: '#f8f9fa'
+          }}>
+            <IconButton
+              onClick={() => handleViewModeChange('list')}
+              sx={{
+                p: 1,
+                borderRadius: 1.5,
+                bgcolor: viewMode === 'list' ? '#7442BF' : 'transparent',
+                color: viewMode === 'list' ? 'white' : '#666',
+                '&:hover': {
+                  bgcolor: viewMode === 'list' ? '#5e3399' : 'rgba(116, 66, 191, 0.1)',
+                },
+              }}
             >
-              <MenuItem value="date">Date</MenuItem>
-              <MenuItem value="title">Title</MenuItem>
-              <MenuItem value="price">Price</MenuItem>
-            </Select>
-          </FormControl>
-          
-          <FormControl size="small" sx={{ minWidth: 100 }}>
-            <InputLabel>Order</InputLabel>
-            <Select
-              value={sortOrder}
-              label="Order"
-              onChange={(e) => setSortOrder(e.target.value as any)}
+              <ListIcon fontSize="small" />
+            </IconButton>
+            <IconButton
+              onClick={() => handleViewModeChange('summary')}
+              sx={{
+                p: 1,
+                borderRadius: 1.5,
+                bgcolor: viewMode === 'summary' ? '#7442BF' : 'transparent',
+                color: viewMode === 'summary' ? 'white' : '#666',
+                '&:hover': {
+                  bgcolor: viewMode === 'summary' ? '#5e3399' : 'rgba(116, 66, 191, 0.1)',
+                },
+              }}
             >
-              <MenuItem value="desc">Desc</MenuItem>
-              <MenuItem value="asc">Asc</MenuItem>
-            </Select>
-          </FormControl>
+              <SummaryIcon fontSize="small" />
+            </IconButton>
+            <IconButton
+              onClick={() => handleViewModeChange('card')}
+              sx={{
+                p: 1,
+                borderRadius: 1.5,
+                bgcolor: viewMode === 'card' ? '#7442BF' : 'transparent',
+                color: viewMode === 'card' ? 'white' : '#666',
+                '&:hover': {
+                  bgcolor: viewMode === 'card' ? '#5e3399' : 'rgba(116, 66, 191, 0.1)',
+                },
+              }}
+            >
+              <ImageIcon fontSize="small" />
+            </IconButton>
+          </Box>
         </Box>
       </Paper>
 
@@ -299,75 +596,10 @@ const PostListView: React.FC<PostListViewProps> = () => {
         </Paper>
       ) : (
         <>
-          <Box sx={{ 
-            display: 'grid',
-            gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', lg: 'repeat(3, 1fr)' },
-            gap: 3,
-            mb: 4
-          }}>
-            {paginatedPosts.map((post) => (
-              <Card 
-                key={post.id}
-                sx={{ 
-                  height: '100%', 
-                  display: 'flex', 
-                  flexDirection: 'column',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease',
-                  '&:hover': {
-                    transform: 'translateY(-4px)',
-                    boxShadow: '0 8px 25px rgba(0,0,0,0.1)',
-                  }
-                }}
-                onClick={() => handlePostClick(post.id)}
-              >
-                <CardContent sx={{ flex: 1, p: 3 }}>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
-                    <Chip 
-                      label={post.status.toUpperCase()}
-                      color={getStatusColor(post.status)}
-                      size="small"
-                      sx={{ fontWeight: 600 }}
-                    />
-                    <IconButton
-                      size="small"
-                      onClick={(e) => handleMoreClick(e, post.id)}
-                      sx={{ opacity: 0.7, '&:hover': { opacity: 1 } }}
-                    >
-                      <MoreVertIcon fontSize="small" />
-                    </IconButton>
-                  </Box>
-                  
-                  <Typography variant="h6" sx={{ fontWeight: 600, mb: 1, lineHeight: 1.3 }}>
-                    {post.title}
-                  </Typography>
-                  
-                  <Typography 
-                    variant="body2" 
-                    color="text.secondary" 
-                    sx={{ 
-                      mb: 2,
-                      display: '-webkit-box',
-                      WebkitLineClamp: 2,
-                      WebkitBoxOrient: 'vertical',
-                      overflow: 'hidden',
-                      lineHeight: 1.4
-                    }}
-                  >
-                    {post.problem}
-                  </Typography>
-                  
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 'auto' }}>
-                    <Typography variant="body2" sx={{ fontWeight: 600, color: '#7442BF' }}>
-                      {formatPrice(post.estPrice)}
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      {formatDate(post.lastModified)}
-                    </Typography>
-                  </Box>
-                </CardContent>
-              </Card>
-            ))}
+          <Box sx={{ mb: 4 }}>
+            {viewMode === 'list' && renderListView()}
+            {viewMode === 'summary' && renderSummaryView()}
+            {viewMode === 'card' && renderCardView()}
           </Box>
 
           {/* Pagination */}

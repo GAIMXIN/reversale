@@ -250,110 +250,98 @@ const PostActionsPanel: React.FC<PostActionsPanelProps> = ({ post, onUpdate }) =
 
   return (
     <>
-      {/* Fixed Right Panel */}
-      <Paper sx={{ 
-        width: 320,
-        position: 'fixed',
-        right: 0,
-        top: 64, // Account for navbar
-        bottom: 0,
-        overflow: 'auto',
-        bgcolor: 'white',
-        borderLeft: '1px solid #e0e0e0',
-        borderRadius: 0,
-        zIndex: 100,
-      }}>
-        <Box sx={{ p: 3 }}>
-          {/* Panel Header */}
-          <Typography variant="h6" sx={{ fontWeight: 600, mb: 3, color: '#333' }}>
-            Actions
+      {/* Actions Panel Content */}
+      <Box>
+        {/* Panel Header */}
+        <Typography variant="h6" sx={{ fontWeight: 600, mb: 3, color: '#333' }}>
+          Actions
+        </Typography>
+
+        {/* Post Summary */}
+        <Box sx={{ 
+          p: 2, 
+          bgcolor: 'white', 
+          borderRadius: 2, 
+          mb: 3,
+          border: '1px solid #e9ecef',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+        }}>
+          <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
+            {post.title}
           </Typography>
-
-          {/* Post Summary */}
-          <Box sx={{ 
-            p: 2, 
-            bgcolor: '#f8f9fa', 
-            borderRadius: 2, 
-            mb: 3,
-            border: '1px solid #e9ecef'
-          }}>
-            <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
-              {post.title}
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-              Status: {post.status.charAt(0).toUpperCase() + post.status.slice(1)}
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Budget: {formatPrice(post.estPrice)}
-            </Typography>
-          </Box>
-
-          {/* Action Buttons */}
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            {actions.map((action, index) => (
-              <Button
-                key={index}
-                variant={action.variant}
-                color={action.color}
-                startIcon={action.icon}
-                onClick={action.onClick}
-                fullWidth
-                sx={{
-                  justifyContent: 'flex-start',
-                  px: 2,
-                  py: 1.5,
-                  textTransform: 'none',
-                  fontWeight: 500,
-                  ...(action.variant === 'contained' && action.color === 'primary' && {
-                    bgcolor: '#7442BF',
-                    '&:hover': { bgcolor: '#5e3399' }
-                  })
-                }}
-              >
-                {action.label}
-              </Button>
-            ))}
-          </Box>
-
-          {/* Additional Info Section */}
-          {(post.status === 'processing' || post.status === 'completed') && (
-            <>
-              <Divider sx={{ my: 3 }} />
-              <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 2 }}>
-                Project Info
-              </Typography>
-              <List dense>
-                <ListItem sx={{ px: 0, py: 0.5 }}>
-                  <ListItemText 
-                    primary="Timeline" 
-                    secondary={post.estETA}
-                    primaryTypographyProps={{ variant: 'body2', fontWeight: 500 }}
-                    secondaryTypographyProps={{ variant: 'caption' }}
-                  />
-                </ListItem>
-                <ListItem sx={{ px: 0, py: 0.5 }}>
-                  <ListItemText 
-                    primary="Budget" 
-                    secondary={formatPrice(post.estPrice)}
-                    primaryTypographyProps={{ variant: 'body2', fontWeight: 500 }}
-                    secondaryTypographyProps={{ variant: 'caption' }}
-                  />
-                </ListItem>
-                {post.status === 'processing' && (
-                  <ListItem sx={{ px: 0, py: 0.5 }}>
-                    <ListItemText 
-                      primary="Assigned to" 
-                      secondary="Professional Partner"
-                      primaryTypographyProps={{ variant: 'body2', fontWeight: 500 }}
-                      secondaryTypographyProps={{ variant: 'caption' }}
-                    />
-                  </ListItem>
-                )}
-              </List>
-            </>
-          )}
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+            Status: {post.status.charAt(0).toUpperCase() + post.status.slice(1)}
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Budget: {formatPrice(post.estPrice)}
+          </Typography>
         </Box>
-      </Paper>
+
+        {/* Action Buttons */}
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          {actions.map((action, index) => (
+            <Button
+              key={index}
+              variant={action.variant}
+              color={action.color}
+              startIcon={action.icon}
+              onClick={action.onClick}
+              fullWidth
+              sx={{
+                justifyContent: 'flex-start',
+                px: 2,
+                py: 1.5,
+                textTransform: 'none',
+                fontWeight: 500,
+                ...(action.variant === 'contained' && action.color === 'primary' && {
+                  bgcolor: '#7442BF',
+                  '&:hover': { bgcolor: '#5e3399' }
+                })
+              }}
+            >
+              {action.label}
+            </Button>
+          ))}
+        </Box>
+
+        {/* Additional Info Section */}
+        {(post.status === 'processing' || post.status === 'completed') && (
+          <>
+            <Divider sx={{ my: 3 }} />
+            <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 2 }}>
+              Project Info
+            </Typography>
+            <List dense>
+              <ListItem sx={{ px: 0, py: 0.5 }}>
+                <ListItemText 
+                  primary="Timeline" 
+                  secondary={post.estETA}
+                  primaryTypographyProps={{ variant: 'body2', fontWeight: 500 }}
+                  secondaryTypographyProps={{ variant: 'caption' }}
+                />
+              </ListItem>
+              <ListItem sx={{ px: 0, py: 0.5 }}>
+                <ListItemText 
+                  primary="Budget" 
+                  secondary={formatPrice(post.estPrice)}
+                  primaryTypographyProps={{ variant: 'body2', fontWeight: 500 }}
+                  secondaryTypographyProps={{ variant: 'caption' }}
+                />
+              </ListItem>
+              {post.status === 'processing' && (
+                <ListItem sx={{ px: 0, py: 0.5 }}>
+                  <ListItemText 
+                    primary="Assigned to" 
+                    secondary="Professional Partner"
+                    primaryTypographyProps={{ variant: 'body2', fontWeight: 500 }}
+                    secondaryTypographyProps={{ variant: 'caption' }}
+                  />
+                </ListItem>
+              )}
+            </List>
+          </>
+        )}
+      </Box>
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={showDeleteDialog} onClose={() => setShowDeleteDialog(false)}>

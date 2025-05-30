@@ -66,7 +66,7 @@ const PostStatusRenderer: React.FC<PostStatusRendererProps> = ({ post, onUpdate 
   };
 
   const renderDraftStatus = () => (
-    <Paper sx={{ p: 4, bgcolor: '#f8f9fa', border: '1px solid #e9ecef' }}>
+    <Paper sx={{ p: 4, bgcolor: '#f8f9fa', border: '1px solid #e9ecef', borderRadius: 3 }}>
       <Typography variant="h6" sx={{ fontWeight: 600, mb: 3, color: '#333' }}>
         ✏️ Draft Mode
       </Typography>
@@ -153,7 +153,7 @@ const PostStatusRenderer: React.FC<PostStatusRendererProps> = ({ post, onUpdate 
   );
 
   const renderSentStatus = () => (
-    <Paper sx={{ p: 4, bgcolor: '#e3f2fd', border: '1px solid #bbdefb' }}>
+    <Paper sx={{ p: 4, bgcolor: '#e3f2fd', border: '1px solid #bbdefb', borderRadius: 3 }}>
       <Typography variant="h6" sx={{ fontWeight: 600, mb: 3, color: '#1565c0' }}>
         📤 Sent - Waiting for Responses
       </Typography>
@@ -211,7 +211,7 @@ const PostStatusRenderer: React.FC<PostStatusRendererProps> = ({ post, onUpdate 
   );
 
   const renderOngoingStatus = () => (
-    <Paper sx={{ p: 4, bgcolor: '#fff3e0', border: '1px solid #ffcc02' }}>
+    <Paper sx={{ p: 4, bgcolor: '#fff3e0', border: '1px solid #ffcc02', borderRadius: 3 }}>
       <Typography variant="h6" sx={{ fontWeight: 600, mb: 3, color: '#f57c00' }}>
         🔄 Project in Progress
       </Typography>
@@ -327,7 +327,7 @@ const PostStatusRenderer: React.FC<PostStatusRendererProps> = ({ post, onUpdate 
   );
 
   const renderCompletedStatus = () => (
-    <Paper sx={{ p: 4, bgcolor: '#e8f5e8', border: '1px solid #4caf50' }}>
+    <Paper sx={{ p: 4, bgcolor: '#e8f5e8', border: '1px solid #4caf50', borderRadius: 3 }}>
       <Typography variant="h6" sx={{ fontWeight: 600, mb: 3, color: '#2e7d32' }}>
         ✅ Project Completed
       </Typography>
