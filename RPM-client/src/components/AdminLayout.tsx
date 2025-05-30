@@ -1,0 +1,264 @@
+import React, { useState } from 'react';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
+import {
+  Box,
+  Drawer,
+  AppBar,
+  Toolbar,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+  Typography,
+  IconButton,
+  Menu,
+  MenuItem,
+  Avatar,
+  Divider,
+} from '@mui/material';
+import {
+  Dashboard as DashboardIcon,
+  People as SalesTeamIcon,
+  ContactMail as LeadsIcon,
+  Handshake as DealsIcon,
+  Inbox as InboxIcon,
+  Settings as SettingsIcon,
+  Logout as LogoutIcon,
+} from '@mui/icons-material';
+import { useAuth } from '../contexts/AuthContext';
+import logo from '../assests/img/logo.png';
+
+const drawerWidth = 240;
+const HEADER_HEIGHT = 64; // Standard AppBar height
+
+// Admin sidebar navigation items
+const adminSidebarItems = [
+  { path: '/admin/dashboard', label: 'Dashboard', icon: <DashboardIcon /> },
+  { path: '/admin/sales-team', label: 'Sales Team', icon: <SalesTeamIcon /> },
+  { path: '/admin/leads', label: 'Leads', icon: <LeadsIcon /> },
+  { path: '/admin/deals', label: 'Deals', icon: <DealsIcon /> },
+  { path: '/admin/inbox', label: 'Inbox', icon: <InboxIcon /> },
+];
+
+interface AdminLayoutProps {
+  children: React.ReactNode;
+}
+
+const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { user, logout } = useAuth();
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+
+  const handleAvatarClick = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+    handleMenuClose();
+  };
+
+  return (
+    <Box sx={{ display: 'flex' }}>
+      {/* Sidebar */}
+      <Drawer
+        variant="permanent"
+        sx={{
+          width: drawerWidth,
+          flexShrink: 0,
+          '& .MuiDrawer-paper': {
+            width: drawerWidth,
+            boxSizing: 'border-box',
+            backgroundColor: '#f8f9fa',
+            borderRight: '1px solid #e0e0e0',
+          },
+        }}
+      >
+        {/* Logo Section */}
+        <Box sx={{ 
+          height: HEADER_HEIGHT, // Match AppBar height exactly
+          px: 2, // Reduced horizontal padding
+          py: 0, // Minimal vertical padding
+          borderBottom: '1px solid #e0e0e0',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}>
+          <Box 
+            component="img" 
+            src={logo} 
+            alt="ReverSale Admin" 
+            sx={{ 
+              height: 60, // Slightly smaller logo to fit better
+              width: 'auto',
+              maxWidth: 140, // Reduced max width
+              objectFit: 'contain',
+              cursor: 'pointer',
+            }}
+            onClick={() => navigate('/admin/dashboard')}
+          />
+        </Box>
+
+        {/* Navigation Menu */}
+        <Box sx={{ px: 2, pt: 1, flex: 1 }}>
+          <List sx={{ py: 0 }}>
+            {adminSidebarItems.map((item) => {
+              const isActive = location.pathname === item.path;
+              
+              return (
+                <ListItem key={item.path} disablePadding sx={{ mb: 1 }}>
+                  <ListItemButton
+                    component={Link}
+                    to={item.path}
+                    selected={isActive}
+                    sx={{
+                      borderRadius: 2,
+                      '&.Mui-selected': {
+                        backgroundColor: '#7442BF',
+                        color: 'white',
+                        '&:hover': {
+                          backgroundColor: '#5e3399',
+                        },
+                      },
+                      '&:hover': {
+                        backgroundColor: isActive ? '#5e3399' : 'rgba(116, 66, 191, 0.08)',
+                      },
+                    }}
+                  >
+                    <ListItemIcon 
+                      sx={{ 
+                        color: isActive ? 'white' : '#7442BF',
+                        minWidth: 40 
+                      }}
+                    >
+                      {item.icon}
+                    </ListItemIcon>
+                    <ListItemText 
+                      primary={item.label}
+                      sx={{
+                        '& .MuiListItemText-primary': {
+                          fontWeight: isActive ? 600 : 500,
+                        },
+                      }}
+                    />
+                  </ListItemButton>
+                </ListItem>
+              );
+            })}
+          </List>
+        </Box>
+
+        {/* Footer */}
+        <Box sx={{ 
+          mt: 'auto', 
+          p: 2,
+          borderTop: '1px solid #e0e0e0'
+        }}>
+          <Typography variant="caption" sx={{ 
+            color: '#6c757d',
+            display: 'block',
+            textAlign: 'center'
+          }}>
+            © 2024 ReverSale Admin
+          </Typography>
+        </Box>
+      </Drawer>
+
+      {/* Main Content */}
+      <Box component="main" sx={{ flexGrow: 1 }}>
+        {/* Top AppBar */}
+        <AppBar 
+          position="sticky" 
+          elevation={0}
+          sx={{ 
+            backgroundColor: 'white',
+            borderBottom: '1px solid #e0e0e0',
+            color: '#333',
+            height: HEADER_HEIGHT, // Explicit height
+          }}
+        >
+          <Toolbar sx={{ 
+            justifyContent: 'space-between',
+            minHeight: `${HEADER_HEIGHT}px !important`, // Force consistent height
+            height: HEADER_HEIGHT,
+          }}>
+            {/* Admin Panel Title */}
+            <Typography variant="h6" sx={{ fontWeight: 600, color: '#7442BF' }}>
+              Admin Panel
+            </Typography>
+
+            {/* Avatar with Dropdown */}
+            <IconButton onClick={handleAvatarClick} sx={{ p: 0 }}>
+              <Avatar 
+                sx={{ 
+                  width: 40, 
+                  height: 40,
+                  backgroundColor: '#7442BF',
+                  fontSize: '1rem',
+                  fontWeight: 600
+                }}
+              >
+                {user?.name?.charAt(0) || 'A'}
+              </Avatar>
+            </IconButton>
+            
+            <Menu
+              anchorEl={anchorEl}
+              open={Boolean(anchorEl)}
+              onClose={handleMenuClose}
+              transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+              anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+              PaperProps={{
+                sx: {
+                  mt: 1,
+                  minWidth: 180,
+                  boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                  borderRadius: 2,
+                }
+              }}
+            >
+              <Box sx={{ px: 2, py: 1.5, borderBottom: '1px solid #f0f0f0' }}>
+                <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                  {user?.name || 'Administrator'}
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  {user?.email}
+                </Typography>
+              </Box>
+              
+              <MenuItem onClick={() => { navigate('/admin/settings'); handleMenuClose(); }} sx={{ py: 1.5 }}>
+                <ListItemIcon sx={{ minWidth: 36 }}>
+                  <SettingsIcon fontSize="small" />
+                </ListItemIcon>
+                Settings
+              </MenuItem>
+              
+              <Divider />
+              
+              <MenuItem onClick={handleLogout} sx={{ py: 1.5, color: 'error.main' }}>
+                <ListItemIcon sx={{ minWidth: 36 }}>
+                  <LogoutIcon fontSize="small" color="error" />
+                </ListItemIcon>
+                Logout
+              </MenuItem>
+            </Menu>
+          </Toolbar>
+        </AppBar>
+
+        {/* Page Content */}
+        <Box sx={{ p: 3 }}>
+          {children}
+        </Box>
+      </Box>
+    </Box>
+  );
+};
+
+export default AdminLayout; 

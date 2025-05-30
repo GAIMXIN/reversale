@@ -84,11 +84,22 @@ import {
           };
           login(fakeToken, salespersonUser);
           navigate('/sales/dashboard');
+        } else if (email === "admin@example.com" && password === "12345678") {
+          // admin用户登录
+          const fakeToken = "fake-jwt-token-" + Math.random().toString(36).substring(7);
+          const adminUser = {
+            id: "admin-user-1",
+            email: email,
+            userType: 'admin' as const,
+            name: "Administrator"
+          };
+          login(fakeToken, adminUser);
+          navigate('/admin/dashboard');
         } else {
           throw new Error('Invalid credentials');
         }
       } catch (err) {
-        setError('Invalid email or password. Try test@example.com or salesman@example.com with password 123456');
+        setError('Invalid email or password. Try test@example.com, salesman@example.com, or admin@example.com with their respective passwords');
       }
     };
     

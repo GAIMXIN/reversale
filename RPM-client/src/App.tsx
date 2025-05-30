@@ -28,6 +28,14 @@ import SalesSettings from './screens/sales/SalesSettings';
 import DraftEdit from './screens/sales/DraftEdit';
 import MassEmailSender from './screens/tools/MassEmailSender';
 import ToolsPlaceholder from './screens/tools/ToolsPlaceholder';
+import AdminLayout from './components/AdminLayout';
+import AdminDashboard from './screens/admin/AdminDashboard';
+import AdminSalesTeam from './screens/admin/AdminSalesTeam';
+import AdminLeads from './screens/admin/AdminLeads';
+import AdminDeals from './screens/admin/AdminDeals';
+import AdminCommissions from './screens/admin/AdminCommissions';
+import AdminInbox from './screens/admin/AdminInbox';
+import AdminSettings from './screens/admin/AdminSettings';
 import './App.css';
 
 // Protected Chat Component for regular users
@@ -39,6 +47,11 @@ const ProtectedChat: React.FC = () => {
     return <Navigate to="/sales/dashboard" replace />;
   }
   
+  // Redirect admin users to their dashboard
+  if (isAuthenticated && user?.userType === 'admin') {
+    return <Navigate to="/admin/dashboard" replace />;
+  }
+  
   return (
     <ChatLayout>
       <ChatScreen isAuthenticated={isAuthenticated} />
@@ -47,7 +60,7 @@ const ProtectedChat: React.FC = () => {
 };
 
 // Protected Route Component
-const ProtectedRoute: React.FC<{ children: React.ReactNode; allowedUserTypes?: ('test' | 'salesperson')[] }> = ({ 
+const ProtectedRoute: React.FC<{ children: React.ReactNode; allowedUserTypes?: ('test' | 'salesperson' | 'admin')[] }> = ({ 
   children, 
   allowedUserTypes = ['test'] 
 }) => {
@@ -244,6 +257,64 @@ function App() {
                 element={
                   <ProtectedRoute allowedUserTypes={['salesperson']}>
                     <SalesLayout><ToolsPlaceholder /></SalesLayout>
+                  </ProtectedRoute>
+                } 
+              />
+              
+              {/* Admin routes */}
+              <Route 
+                path="/admin/dashboard" 
+                element={
+                  <ProtectedRoute allowedUserTypes={['admin']}>
+                    <AdminLayout><AdminDashboard /></AdminLayout>
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/admin/sales-team" 
+                element={
+                  <ProtectedRoute allowedUserTypes={['admin']}>
+                    <AdminLayout><AdminSalesTeam /></AdminLayout>
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/admin/leads" 
+                element={
+                  <ProtectedRoute allowedUserTypes={['admin']}>
+                    <AdminLayout><AdminLeads /></AdminLayout>
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/admin/deals" 
+                element={
+                  <ProtectedRoute allowedUserTypes={['admin']}>
+                    <AdminLayout><AdminDeals /></AdminLayout>
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/admin/commissions" 
+                element={
+                  <ProtectedRoute allowedUserTypes={['admin']}>
+                    <AdminLayout><AdminCommissions /></AdminLayout>
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/admin/inbox" 
+                element={
+                  <ProtectedRoute allowedUserTypes={['admin']}>
+                    <AdminLayout><AdminInbox /></AdminLayout>
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/admin/settings" 
+                element={
+                  <ProtectedRoute allowedUserTypes={['admin']}>
+                    <AdminLayout><AdminSettings /></AdminLayout>
                   </ProtectedRoute>
                 } 
               />

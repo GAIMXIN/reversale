@@ -3,7 +3,7 @@ import React, { createContext, useContext, useState } from 'react';
 interface User {
   id: string;
   email: string;
-  userType: 'test' | 'salesperson';
+  userType: 'test' | 'salesperson' | 'admin';
   name?: string;
   selectedField?: string;
 }
