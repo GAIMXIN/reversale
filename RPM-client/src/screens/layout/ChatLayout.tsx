@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { ReactNode } from "react";
 import { Box, Container, IconButton, Menu, MenuItem } from "@mui/material";
-import { AccountCircle, Logout } from "@mui/icons-material";
+import { AccountCircle, Logout, Person } from "@mui/icons-material";
 import ChatSidebar from "./ChatSidebar";
 import { useAuth } from "../../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -11,14 +11,29 @@ interface ChatLayoutProps {
   children: ReactNode;
 }
 
+const SIDEBAR_WIDTH_KEY = 'reversal-sidebar-width';
+const DEFAULT_WIDTH = 280;
+const MIN_WIDTH = 72;
+const MAX_WIDTH = 400;
+
 const ChatLayout: React.FC<ChatLayoutProps> = ({ children }) => {
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  // Load sidebar width from localStorage or use default
+  const [sidebarWidth, setSidebarWidth] = useState(() => {
+    const savedWidth = localStorage.getItem(SIDEBAR_WIDTH_KEY);
+    return savedWidth ? parseInt(savedWidth, 10) : DEFAULT_WIDTH;
+  });
+  
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const { logout, isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
-  const toggleSidebar = () => {
-    setSidebarCollapsed(!sidebarCollapsed);
+  // Save sidebar width to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem(SIDEBAR_WIDTH_KEY, sidebarWidth.toString());
+  }, [sidebarWidth]);
+
+  const handleSidebarWidthChange = (newWidth: number) => {
+    setSidebarWidth(newWidth);
   };
 
   const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
@@ -29,6 +44,11 @@ const ChatLayout: React.FC<ChatLayoutProps> = ({ children }) => {
     setAnchorEl(null);
   };
 
+  const handleProfileSettings = () => {
+    navigate('/dashboard');
+    handleClose();
+  };
+
   const handleLogout = () => {
     logout();
     navigate('/login');
@@ -37,19 +57,24 @@ const ChatLayout: React.FC<ChatLayoutProps> = ({ children }) => {
 
   return (
     <Box sx={{ display: "flex", minHeight: "100vh", bgcolor: "background.default" }}>
-      <ChatSidebar collapsed={sidebarCollapsed} onToggle={toggleSidebar} />
+      <ChatSidebar 
+        width={sidebarWidth}
+        onWidthChange={handleSidebarWidthChange}
+        minWidth={MIN_WIDTH}
+        maxWidth={MAX_WIDTH}
+      />
       
       {/* Dynamic Logo positioned to the right of sidebar */}
       <Box
         sx={{
           position: 'fixed',
           top: 4,
-          left: sidebarCollapsed ? 88 : 296, // 72px (collapsed width) + 16px margin OR 280px (expanded width) + 16px margin
+          left: sidebarWidth + 16, // Dynamic positioning based on sidebar width
           zIndex: 1000,
           display: 'flex',
           alignItems: 'center',
           cursor: 'pointer',
-          transition: 'left 0.3s ease', // Smooth transition when sidebar toggles
+          transition: 'left 0.2s ease', // Smooth transition when sidebar resizes
         }}
         onClick={() => navigate('/')}
       >
@@ -99,6 +124,10 @@ const ChatLayout: React.FC<ChatLayoutProps> = ({ children }) => {
               horizontal: 'right',
             }}
           >
+            <MenuItem onClick={handleProfileSettings}>
+              <Person sx={{ mr: 1 }} />
+              Profile / Settings
+            </MenuItem>
             <MenuItem onClick={handleLogout}>
               <Logout sx={{ mr: 1 }} />
               Logout
@@ -125,15 +154,36 @@ const ChatLayout: React.FC<ChatLayoutProps> = ({ children }) => {
         </IconButton>
       )}
 
+      {/* 
+        MAIN CONTENT AREA - FLEX CENTERED:
+        
+        This structure ensures content stays centered regardless of sidebar width:
+        1. Main area takes all remaining space (flex: 1)
+        2. Uses flexbox to center content horizontally (justifyContent: 'center')
+        3. Inner wrapper constrains max-width and adds padding
+        4. Content stays centered when sidebar toggles between collapsed/expanded
+      */}
       <Box 
         component="main" 
         sx={{ 
-          flexGrow: 1, 
+          flex: 1, // Take all remaining space after sidebar
+          display: 'flex', // Use flexbox for centering
+          justifyContent: 'center', // Center content horizontally
           overflow: 'auto',
-          minWidth: 0,
+          minWidth: 0, // Prevent flex item from overflowing
+          position: 'relative',
         }}
       >
-        {children}
+        {/* Centering and Max-Width Wrapper */}
+        <Box
+          sx={{
+            width: '100%',
+            maxWidth: { xs: '100%', sm: '1040px' }, // Responsive max-width
+            px: { xs: 2, sm: 3 }, // Responsive horizontal padding (theme.spacing)
+          }}
+        >
+          {children}
+        </Box>
       </Box>
     </Box>
   );

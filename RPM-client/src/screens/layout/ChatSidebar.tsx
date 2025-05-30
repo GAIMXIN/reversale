@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -15,9 +15,9 @@ import {
   Divider,
 } from '@mui/material';
 import DashboardIcon from '@mui/icons-material/Dashboard';
-import BusinessIcon from '@mui/icons-material/Business';
-import LightbulbIcon from '@mui/icons-material/Lightbulb';
+import StorefrontIcon from '@mui/icons-material/Storefront';
 import SupportAgentIcon from '@mui/icons-material/SupportAgent';
+import ReceiptIcon from '@mui/icons-material/Receipt';
 import MenuIcon from '@mui/icons-material/Menu';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import AddIcon from '@mui/icons-material/Add';
@@ -25,8 +25,10 @@ import ChatIcon from '@mui/icons-material/Chat';
 import { useAuth } from '../../contexts/AuthContext';
 
 interface ChatSidebarProps {
-  collapsed: boolean;
-  onToggle: () => void;
+  width: number;
+  onWidthChange: (width: number) => void;
+  minWidth?: number;
+  maxWidth?: number;
 }
 
 interface ChatHistory {
@@ -38,16 +40,25 @@ interface ChatHistory {
 
 const menuItems = [
   { to: "/dashboard", text: "Dashboard", icon: <DashboardIcon /> },
-  { to: "/business-insights", text: "Business Insights", icon: <BusinessIcon /> },
-  { to: "/personalized-products", text: "Solutions", icon: <LightbulbIcon /> },
-  { to: "/contact-salesman", text: "Contact Salesman", icon: <SupportAgentIcon /> },
+  { to: "/markets", text: "Markets", icon: <StorefrontIcon /> },
+  { to: "/billing", text: "Billing & Invoices", icon: <ReceiptIcon /> },
+  { to: "/support", text: "Support", icon: <SupportAgentIcon /> },
 ];
 
-export default function ChatSidebar({ collapsed, onToggle }: ChatSidebarProps) {
+export default function ChatSidebar({ 
+  width, 
+  onWidthChange, 
+  minWidth = 72, 
+  maxWidth = 400 
+}: ChatSidebarProps) {
   const location = useLocation();
   const navigate = useNavigate();
   const { isAuthenticated, user } = useAuth();
   const [chatHistory, setChatHistory] = useState<ChatHistory[]>([]);
+  const [isResizing, setIsResizing] = useState(false);
+
+  // Determine if sidebar is in collapsed state based on width
+  const isCollapsed = width <= 120;
 
   // 模拟聊天历史数据
   useEffect(() => {
@@ -73,6 +84,60 @@ export default function ChatSidebar({ collapsed, onToggle }: ChatSidebarProps) {
     ];
     setChatHistory(mockChatHistory);
   }, []);
+
+  // Handle mouse events for resizing
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log('Starting resize...'); // Debug log
+    setIsResizing(true);
+  }, []);
+
+  const handleMouseMove = useCallback((e: MouseEvent) => {
+    if (!isResizing) return;
+    
+    e.preventDefault();
+    const newWidth = e.clientX;
+    console.log('Resizing to width:', newWidth); // Debug log
+    
+    if (newWidth >= minWidth && newWidth <= maxWidth) {
+      onWidthChange(newWidth);
+    }
+  }, [isResizing, minWidth, maxWidth, onWidthChange]);
+
+  const handleMouseUp = useCallback(() => {
+    console.log('Ending resize...'); // Debug log
+    setIsResizing(false);
+  }, []);
+
+  // Add and remove event listeners
+  useEffect(() => {
+    if (isResizing) {
+      console.log('Adding resize event listeners'); // Debug log
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+      document.body.style.userSelect = 'none';
+      document.body.style.cursor = 'col-resize';
+    } else {
+      console.log('Removing resize event listeners'); // Debug log
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+      document.body.style.userSelect = '';
+      document.body.style.cursor = '';
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+      document.body.style.userSelect = '';
+      document.body.style.cursor = '';
+    };
+  }, [isResizing, handleMouseMove, handleMouseUp]);
+
+  const handleToggle = () => {
+    const newWidth = isCollapsed ? 280 : 72;
+    onWidthChange(newWidth);
+  };
 
   const handleNewChat = () => {
     // 清除当前聊天内容，开始新对话
@@ -108,92 +173,99 @@ export default function ChatSidebar({ collapsed, onToggle }: ChatSidebarProps) {
   }
 
   return (
-    <Drawer
-      variant="permanent"
-      sx={{
-        width: collapsed ? 72 : 280,
-        flexShrink: 0,
-        transition: 'width 0.3s ease',
-        '& .MuiDrawer-paper': {
-          width: collapsed ? 72 : 280,
-          boxSizing: 'border-box',
-          backgroundColor: '#f5f5f5',
-          transition: 'width 0.3s ease',
-          overflowX: 'hidden',
-          zIndex: 1200, // Ensure it's below the fixed logo
-        },
-      }}
-    >
-      <Box sx={{ overflow: 'auto', height: '100%', display: 'flex', flexDirection: 'column' }}>
-        {/* Toggle Button */}
-        <Box sx={{ 
-          display: 'flex', 
-          justifyContent: collapsed ? 'center' : 'flex-end',
-          p: 1,
-          borderBottom: '1px solid #e0e0e0'
-        }}>
-          <IconButton 
-            onClick={onToggle}
-            sx={{ 
-              color: '#7442BF',
-              '&:hover': {
-                backgroundColor: 'rgba(116, 66, 191, 0.1)',
-              }
-            }}
-          >
-            {collapsed ? <MenuIcon /> : <ChevronLeftIcon />}
-          </IconButton>
-        </Box>
-
-        {/* New Chat Button - Always show when authenticated */}
-        {isAuthenticated && (
-          <Box sx={{ p: 2 }}>
-            <Tooltip title={collapsed ? 'New Chat' : ''} placement="right" arrow>
-              <Button
-                fullWidth={!collapsed}
-                variant="contained"
-                startIcon={collapsed ? null : <AddIcon />}
-                onClick={handleNewChat}
-                sx={{
-                  bgcolor: '#7442BF',
-                  color: 'white',
-                  borderRadius: 2,
-                  py: 1.5,
-                  minWidth: collapsed ? 48 : 'auto',
-                  width: collapsed ? 48 : '100%',
-                  height: collapsed ? 48 : 'auto',
-                  '&:hover': {
-                    bgcolor: '#5e3399',
-                  },
-                }}
-              >
-                {collapsed ? <AddIcon /> : 'New Chat'}
-              </Button>
-            </Tooltip>
+    <Box sx={{ position: 'relative' }}>
+      <Drawer
+        variant="permanent"
+        sx={{
+          width: width,
+          flexShrink: 0,
+          transition: isResizing ? 'none' : 'width 0.2s ease',
+          '& .MuiDrawer-paper': {
+            width: width,
+            boxSizing: 'border-box',
+            backgroundColor: '#f5f5f5',
+            transition: isResizing ? 'none' : 'width 0.2s ease',
+            overflowX: 'hidden',
+            borderRight: 'none', // Remove default border
+          },
+        }}
+      >
+        <Box sx={{ overflow: 'auto', pt: 0, height: '100%' }}>
+          {/* Toggle Button */}
+          <Box sx={{ 
+            display: 'flex', 
+            justifyContent: isCollapsed ? 'center' : 'flex-end',
+            p: 1,
+            borderBottom: '1px solid #e0e0e0'
+          }}>
+            <IconButton 
+              onClick={handleToggle}
+              sx={{ 
+                color: '#7442BF',
+                '&:hover': {
+                  backgroundColor: 'rgba(116, 66, 191, 0.1)',
+                }
+              }}
+            >
+              {isCollapsed ? <MenuIcon /> : <ChevronLeftIcon />}
+            </IconButton>
           </Box>
-        )}
 
-        {/* Chat History - Always show when authenticated and not collapsed */}
-        {!collapsed && isAuthenticated && (
-          <>
-            <Box sx={{ overflow: 'auto', maxHeight: '200px', mb: 1 }}>
-              <Typography 
-                variant="subtitle2" 
-                sx={{ 
-                  px: 2, 
-                  py: 1, 
-                  color: 'text.secondary',
-                  fontWeight: 600 
-                }}
+          {/* New Request Button */}
+          {isAuthenticated && (
+            <Box sx={{ p: 2 }}>
+              <Tooltip 
+                title={isCollapsed ? "New Request" : ""} 
+                placement="right"
+                arrow
               >
+                <Button
+                  variant="contained"
+                  onClick={handleNewChat}
+                  startIcon={!isCollapsed ? <AddIcon /> : null}
+                  sx={{
+                    width: '100%',
+                    justifyContent: isCollapsed ? 'center' : 'flex-start',
+                    bgcolor: '#7442BF',
+                    color: 'white',
+                    borderRadius: 2,
+                    py: 1.5,
+                    px: isCollapsed ? 1 : 2,
+                    minWidth: isCollapsed ? 48 : 'auto',
+                    '&:hover': {
+                      bgcolor: '#5e3399',
+                    },
+                    boxShadow: '0 2px 8px rgba(116, 66, 191, 0.3)',
+                  }}
+                >
+                  {isCollapsed ? <AddIcon /> : "New Request"}
+                </Button>
+              </Tooltip>
+            </Box>
+          )}
+
+          {/* Recent Chats */}
+          {isAuthenticated && !isCollapsed && (
+            <Box sx={{ px: 2, pb: 2 }}>
+              <Typography variant="subtitle2" sx={{ 
+                color: '#6c757d', 
+                mb: 1, 
+                px: 1,
+                fontSize: '0.75rem',
+                fontWeight: 600,
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px'
+              }}>
                 Recent Chats
               </Typography>
-              <List sx={{ pt: 0 }}>
-                {chatHistory.map((chat) => (
+              <List sx={{ py: 0 }}>
+                {chatHistory.slice(0, 3).map((chat) => (
                   <ListItem key={chat.id} disablePadding>
                     <ListItemButton
                       onClick={() => handleChatSelect(chat.id)}
                       sx={{
+                        borderRadius: 1,
+                        mb: 0.5,
                         px: 2,
                         py: 1,
                         '&:hover': {
@@ -201,47 +273,28 @@ export default function ChatSidebar({ collapsed, onToggle }: ChatSidebarProps) {
                         },
                       }}
                     >
-                      <ListItemIcon sx={{ minWidth: 36 }}>
-                        <ChatIcon sx={{ fontSize: 20, color: '#7442BF' }} />
+                      <ListItemIcon sx={{ minWidth: 32 }}>
+                        <ChatIcon sx={{ fontSize: 18, color: '#7442BF' }} />
                       </ListItemIcon>
                       <ListItemText
                         primary={
-                          <Typography 
-                            variant="body2" 
-                            sx={{ 
-                              fontWeight: 500,
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis',
-                              whiteSpace: 'nowrap'
-                            }}
-                          >
+                          <Typography variant="body2" sx={{ 
+                            fontWeight: 500,
+                            fontSize: '0.85rem',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap'
+                          }}>
                             {chat.title}
                           </Typography>
                         }
                         secondary={
-                          <Box>
-                            <Typography 
-                              variant="caption" 
-                              sx={{ 
-                                color: 'text.secondary',
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
-                                whiteSpace: 'nowrap',
-                                display: 'block'
-                              }}
-                            >
-                              {chat.lastMessage}
-                            </Typography>
-                            <Typography 
-                              variant="caption" 
-                              sx={{ 
-                                color: 'text.disabled',
-                                fontSize: '0.7rem'
-                              }}
-                            >
-                              {formatTime(chat.timestamp)}
-                            </Typography>
-                          </Box>
+                          <Typography variant="caption" sx={{ 
+                            color: '#6c757d',
+                            fontSize: '0.7rem'
+                          }}>
+                            {formatTime(chat.timestamp)}
+                          </Typography>
                         }
                       />
                     </ListItemButton>
@@ -249,100 +302,151 @@ export default function ChatSidebar({ collapsed, onToggle }: ChatSidebarProps) {
                 ))}
               </List>
             </Box>
-            <Divider />
-          </>
-        )}
+          )}
 
-        {/* Navigation Menu - Only show when authenticated */}
-        {isAuthenticated && (
-          <List sx={{ pt: 1 }}>
-            {menuItems.map((item) => (
-              <ListItem key={item.text} disablePadding>
-                <Tooltip 
-                  title={collapsed ? item.text : ''} 
-                  placement="right"
-                  arrow
-                >
-                  <ListItemButton
-                    component={Link}
-                    to={item.to}
-                    selected={location.pathname === item.to}
-                    sx={{
-                      minHeight: 48,
-                      justifyContent: collapsed ? 'center' : 'initial',
-                      px: 2.5,
-                      '&.Mui-selected': {
-                        backgroundColor: 'rgba(116, 66, 191, 0.1)',
-                        '&:hover': {
-                          backgroundColor: 'rgba(116, 66, 191, 0.2)',
-                        },
-                      },
-                      '&:hover': {
-                        backgroundColor: 'rgba(116, 66, 191, 0.05)',
-                      },
-                    }}
+          <Divider sx={{ mx: 2, mb: 2 }} />
+
+          {/* Navigation Menu */}
+          {isAuthenticated && (
+            <List sx={{ pt: 1 }}>
+              {menuItems.map((item) => (
+                <ListItem key={item.text} disablePadding>
+                  <Tooltip 
+                    title={isCollapsed ? item.text : ''} 
+                    placement="right"
+                    arrow
                   >
-                    <ListItemIcon 
-                      sx={{ 
-                        minWidth: 0,
-                        mr: collapsed ? 0 : 3,
-                        justifyContent: 'center',
-                        color: location.pathname === item.to ? '#7442BF' : 'inherit'
+                    <ListItemButton
+                      component={Link}
+                      to={item.to}
+                      selected={location.pathname === item.to}
+                      sx={{
+                        minHeight: 48,
+                        justifyContent: isCollapsed ? 'center' : 'initial',
+                        px: 2.5,
+                        '&.Mui-selected': {
+                          backgroundColor: 'rgba(116, 66, 191, 0.1)',
+                          '&:hover': {
+                            backgroundColor: 'rgba(116, 66, 191, 0.2)',
+                          },
+                        },
+                        '&:hover': {
+                          backgroundColor: 'rgba(116, 66, 191, 0.05)',
+                        },
                       }}
                     >
-                      {item.icon}
-                    </ListItemIcon>
-                    {!collapsed && (
-                      <ListItemText 
-                        primary={item.text}
+                      <ListItemIcon 
                         sx={{ 
-                          opacity: collapsed ? 0 : 1,
+                          minWidth: 0,
+                          mr: isCollapsed ? 0 : 3,
+                          justifyContent: 'center',
                           color: location.pathname === item.to ? '#7442BF' : 'inherit'
                         }}
-                      />
-                    )}
-                  </ListItemButton>
-                </Tooltip>
-              </ListItem>
-            ))}
-          </List>
-        )}
+                      >
+                        {item.icon}
+                      </ListItemIcon>
+                      {!isCollapsed && (
+                        <ListItemText 
+                          primary={item.text}
+                          sx={{ 
+                            opacity: isCollapsed ? 0 : 1,
+                            color: location.pathname === item.to ? '#7442BF' : 'inherit'
+                          }}
+                        />
+                      )}
+                    </ListItemButton>
+                  </Tooltip>
+                </ListItem>
+              ))}
+            </List>
+          )}
 
-        {/* Login prompt for unauthenticated users */}
-        {!isAuthenticated && !collapsed && (
-          <Box sx={{ p: 2, textAlign: 'center' }}>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-              Login to access Dashboard and other features
-            </Typography>
-            <Button
-              variant="outlined"
-              onClick={() => navigate('/login')}
+          {/* Footer */}
+          {!isCollapsed && (
+            <Box sx={{ 
+              mt: 'auto', 
+              p: 2,
+              borderTop: '1px solid #e0e0e0'
+            }}>
+              <Typography variant="caption" sx={{ 
+                color: '#6c757d',
+                display: 'block',
+                textAlign: 'center'
+              }}>
+                © 2024 ReverSale
+              </Typography>
+            </Box>
+          )}
+        </Box>
+      </Drawer>
+
+      {/* Resize Handle */}
+      <Box
+        onMouseDown={handleMouseDown}
+        sx={{
+          position: 'absolute',
+          top: 0,
+          right: 0,
+          bottom: 0,
+          width: 8,
+          cursor: 'col-resize',
+          backgroundColor: 'transparent',
+          borderRight: '1px solid #e0e0e0',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          '&:hover': {
+            backgroundColor: 'rgba(116, 66, 191, 0.1)',
+            borderRight: '3px solid #7442BF',
+            '& .resize-indicator': {
+              opacity: 1,
+              backgroundColor: '#7442BF',
+            }
+          },
+          '&:active': {
+            backgroundColor: 'rgba(116, 66, 191, 0.2)',
+            borderRight: '3px solid #7442BF',
+            '& .resize-indicator': {
+              opacity: 1,
+              backgroundColor: '#7442BF',
+            }
+          },
+          zIndex: 1001,
+          transition: 'all 0.2s ease',
+        }}
+      >
+        {/* Visual grip indicator */}
+        <Box
+          className="resize-indicator"
+          sx={{
+            width: 4,
+            height: 60,
+            backgroundColor: '#d0d0d0',
+            borderRadius: 2,
+            opacity: 0.3,
+            transition: 'all 0.2s ease',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'space-around',
+            padding: '8px 0',
+          }}
+        >
+          {/* Grip dots */}
+          {[...Array(6)].map((_, i) => (
+            <Box
+              key={i}
               sx={{
-                color: '#7442BF',
-                borderColor: '#7442BF',
-                '&:hover': {
-                  borderColor: '#5e3399',
-                  bgcolor: 'rgba(116, 66, 191, 0.04)'
-                }
+                width: 2,
+                height: 2,
+                backgroundColor: 'currentColor',
+                borderRadius: '50%',
+                opacity: 0.6,
               }}
-            >
-              Login
-            </Button>
-          </Box>
-        )}
-
-        {/* Footer */}
-        {!collapsed && (
-          <Box sx={{ 
-            p: 2,
-            textAlign: 'center'
-          }}>
-            <Typography variant="caption" color="text.secondary">
-              © 2024 ReverSSale
-            </Typography>
-          </Box>
-        )}
+            />
+          ))}
+        </Box>
       </Box>
-    </Drawer>
+    </Box>
   );
 } 

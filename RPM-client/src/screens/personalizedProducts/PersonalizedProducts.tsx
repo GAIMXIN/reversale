@@ -392,7 +392,7 @@ export default function PersonalizedProducts() {
   };
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 8, mb: 4 }}>
+    <Box sx={{ mt: 8, mb: 4 }}>
       {/* Header */}
       <Paper sx={{ 
         p: 4, 
@@ -579,13 +579,6 @@ export default function PersonalizedProducts() {
                                   px: 1.5,
                                   py: 0.5,
                                   borderRadius: 3,
-                                  '&:hover': {
-                                    transform: 'scale(1.05)',
-                                    bgcolor: 'primary.light',
-                                    color: 'white',
-                                    borderColor: 'primary.light'
-                                  },
-                                  transition: 'all 0.2s ease'
                                 }}
                               >
                                 Try Demo
@@ -603,16 +596,6 @@ export default function PersonalizedProducts() {
                                   px: 1.5,
                                   py: 0.5,
                                   borderRadius: 3,
-                                  bgcolor: '#f3e5f5',
-                                  borderColor: '#9c27b0',
-                                  color: '#9c27b0',
-                                  '&:hover': {
-                                    transform: 'scale(1.05)',
-                                    bgcolor: '#9c27b0',
-                                    color: 'white',
-                                    borderColor: '#9c27b0'
-                                  },
-                                  transition: 'all 0.2s ease'
                                 }}
                               >
                                 iOS
@@ -630,16 +613,6 @@ export default function PersonalizedProducts() {
                                   px: 1.5,
                                   py: 0.5,
                                   borderRadius: 3,
-                                  bgcolor: '#e8f5e8',
-                                  borderColor: '#4caf50',
-                                  color: '#4caf50',
-                                  '&:hover': {
-                                    transform: 'scale(1.05)',
-                                    bgcolor: '#4caf50',
-                                    color: 'white',
-                                    borderColor: '#4caf50'
-                                  },
-                                  transition: 'all 0.2s ease'
                                 }}
                               >
                                 Android
@@ -656,13 +629,6 @@ export default function PersonalizedProducts() {
                                 py: 0.5,
                                 borderRadius: 3,
                                 background: 'linear-gradient(135deg, #7442BF 0%, #9C27B0 100%)',
-                                boxShadow: '0 4px 15px rgba(116, 66, 191, 0.3)',
-                                '&:hover': { 
-                                  background: 'linear-gradient(135deg, #5e3399 0%, #7b1fa2 100%)',
-                                  transform: 'scale(1.05)',
-                                  boxShadow: '0 6px 20px rgba(116, 66, 191, 0.4)'
-                                },
-                                transition: 'all 0.2s ease'
                               }}
                             >
                               Learn More
@@ -720,11 +686,6 @@ export default function PersonalizedProducts() {
                         color: isVoiceMode ? '#7442BF' : 'text.secondary',
                         bgcolor: isVoiceMode ? 'rgba(116, 66, 191, 0.1)' : '#f8f9fa',
                         borderRadius: 2,
-                        '&:hover': { 
-                          bgcolor: 'rgba(116, 66, 191, 0.15)',
-                          transform: 'scale(1.05)'
-                        },
-                        transition: 'all 0.2s ease'
                       }}
                     >
                       {isVoiceMode ? <KeyboardIcon /> : <MicIcon />}
@@ -740,17 +701,6 @@ export default function PersonalizedProducts() {
                           color: isListening ? '#ff4444' : '#7442BF',
                           bgcolor: isListening ? 'rgba(255, 68, 68, 0.1)' : 'rgba(116, 66, 191, 0.1)',
                           borderRadius: 2,
-                          '&:hover': { 
-                            bgcolor: isListening ? 'rgba(255, 68, 68, 0.2)' : 'rgba(116, 66, 191, 0.2)',
-                            transform: 'scale(1.05)'
-                          },
-                          animation: isListening ? 'pulse 1.5s infinite' : 'none',
-                          transition: 'all 0.2s ease',
-                          '@keyframes pulse': {
-                            '0%': { transform: 'scale(1)' },
-                            '50%': { transform: 'scale(1.1)' },
-                            '100%': { transform: 'scale(1)' }
-                          }
                         }}
                       >
                         {isListening ? <MicIcon /> : <MicOffIcon />}
@@ -770,14 +720,11 @@ export default function PersonalizedProducts() {
               borderRadius: 3,
               '&:hover': { 
                 bgcolor: '#5e3399',
-                transform: 'scale(1.05)',
-                boxShadow: '0 4px 15px rgba(116, 66, 191, 0.3)'
               },
               '&:disabled': { 
                 bgcolor: '#e0e0e0',
                 color: '#9e9e9e'
               },
-              transition: 'all 0.2s ease'
             }}
           >
             <SearchIcon />
@@ -886,18 +833,6 @@ export default function PersonalizedProducts() {
                     </Box>
                   </Box>
 
-                  {/* Revenue Streams */}
-                  <Box sx={{ mb: 2 }}>
-                    <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
-                      Revenue Streams:
-                    </Typography>
-                    {product.revenueStreams.map((stream, idx) => (
-                      <Typography key={idx} variant="body2" sx={{ mb: 0.5, color: 'text.secondary' }}>
-                        • {stream}
-                      </Typography>
-                    ))}
-                  </Box>
-
                   {/* Features */}
                   <Box sx={{ mb: 2 }}>
                     <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
@@ -913,18 +848,6 @@ export default function PersonalizedProducts() {
                         />
                       ))}
                     </Box>
-                  </Box>
-
-                  {/* Success Stories */}
-                  <Box sx={{ mb: 2 }}>
-                    <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
-                      Success Stories:
-                    </Typography>
-                    {product.successStories.map((story, idx) => (
-                      <Typography key={idx} variant="body2" sx={{ mb: 0.5, color: 'text.secondary' }}>
-                        📈 <strong>{story.company}:</strong> {story.result}
-                      </Typography>
-                    ))}
                   </Box>
 
                   <Divider sx={{ my: 2 }} />
@@ -947,13 +870,6 @@ export default function PersonalizedProducts() {
                       sx={{ 
                         flex: 1,
                         borderRadius: 3,
-                        '&:hover': {
-                          transform: 'scale(1.02)',
-                          bgcolor: 'primary.light',
-                          color: 'white',
-                          borderColor: 'primary.light'
-                        },
-                        transition: 'all 0.2s ease'
                       }}
                     >
                       Learn More
@@ -966,13 +882,6 @@ export default function PersonalizedProducts() {
                         flex: 1,
                         borderRadius: 3,
                         background: 'linear-gradient(135deg, #7442BF 0%, #9C27B0 100%)',
-                        boxShadow: '0 4px 15px rgba(116, 66, 191, 0.3)',
-                        '&:hover': {
-                          background: 'linear-gradient(135deg, #5e3399 0%, #7b1fa2 100%)',
-                          transform: 'scale(1.02)',
-                          boxShadow: '0 6px 20px rgba(116, 66, 191, 0.4)'
-                        },
-                        transition: 'all 0.2s ease'
                       }}
                     >
                       Get Started
@@ -1090,17 +999,13 @@ export default function PersonalizedProducts() {
             bottom: 24,
             right: 24,
             background: 'linear-gradient(135deg, #7442BF 0%, #9C27B0 100%)',
-            boxShadow: '0 6px 20px rgba(116, 66, 191, 0.4)',
             '&:hover': { 
               background: 'linear-gradient(135deg, #5e3399 0%, #7b1fa2 100%)',
-              transform: 'scale(1.1)',
-              boxShadow: '0 8px 25px rgba(116, 66, 191, 0.5)'
             },
             '&:disabled': { 
               bgcolor: '#e0e0e0',
               color: '#9e9e9e'
             },
-            transition: 'all 0.2s ease',
             zIndex: 1000
           }}
         >
@@ -1109,6 +1014,6 @@ export default function PersonalizedProducts() {
           </Tooltip>
         </Fab>
       )}
-    </Container>
+    </Box>
   );
 } 

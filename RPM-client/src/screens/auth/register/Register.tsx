@@ -14,8 +14,6 @@ import {
   InputAdornment,
   IconButton,
   FormHelperText,
-  Chip,
-  Stack,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { useFormik } from "formik";
@@ -29,35 +27,72 @@ interface FormValues {
   password: string;
   confirmPassword: string;
   phoneNumber: string;
-  hasCompany: string;
   companyName: string;
-  address: string;
-  goals: string[];
-  interests: string[];
+  industry: string;
+  address1: string;
+  address2: string;
+  city: string;
+  state: string;
+  zip: string;
 }
 
-const GOALS = [
-  "Increase Sales",
-  "Improve Customer Service",
-  "Expand Market Reach",
-  "Optimize Operations",
-  "Enhance Product Quality",
-  "Reduce Costs",
-  "Build Brand Awareness",
-  "Develop New Products",
+const INDUSTRIES = [
+  "Healthcare",
+  "Local Business", 
+  "Other"
 ];
 
-const INTERESTS = [
-  "E-commerce",
-  "Retail",
-  "Manufacturing",
-  "Healthcare",
-  "Technology",
-  "Finance",
-  "Education",
-  "Real Estate",
-  "Food & Beverage",
-  "Fashion",
+const US_STATES = [
+  { code: "AL", name: "Alabama" },
+  { code: "AK", name: "Alaska" },
+  { code: "AZ", name: "Arizona" },
+  { code: "AR", name: "Arkansas" },
+  { code: "CA", name: "California" },
+  { code: "CO", name: "Colorado" },
+  { code: "CT", name: "Connecticut" },
+  { code: "DE", name: "Delaware" },
+  { code: "FL", name: "Florida" },
+  { code: "GA", name: "Georgia" },
+  { code: "HI", name: "Hawaii" },
+  { code: "ID", name: "Idaho" },
+  { code: "IL", name: "Illinois" },
+  { code: "IN", name: "Indiana" },
+  { code: "IA", name: "Iowa" },
+  { code: "KS", name: "Kansas" },
+  { code: "KY", name: "Kentucky" },
+  { code: "LA", name: "Louisiana" },
+  { code: "ME", name: "Maine" },
+  { code: "MD", name: "Maryland" },
+  { code: "MA", name: "Massachusetts" },
+  { code: "MI", name: "Michigan" },
+  { code: "MN", name: "Minnesota" },
+  { code: "MS", name: "Mississippi" },
+  { code: "MO", name: "Missouri" },
+  { code: "MT", name: "Montana" },
+  { code: "NE", name: "Nebraska" },
+  { code: "NV", name: "Nevada" },
+  { code: "NH", name: "New Hampshire" },
+  { code: "NJ", name: "New Jersey" },
+  { code: "NM", name: "New Mexico" },
+  { code: "NY", name: "New York" },
+  { code: "NC", name: "North Carolina" },
+  { code: "ND", name: "North Dakota" },
+  { code: "OH", name: "Ohio" },
+  { code: "OK", name: "Oklahoma" },
+  { code: "OR", name: "Oregon" },
+  { code: "PA", name: "Pennsylvania" },
+  { code: "RI", name: "Rhode Island" },
+  { code: "SC", name: "South Carolina" },
+  { code: "SD", name: "South Dakota" },
+  { code: "TN", name: "Tennessee" },
+  { code: "TX", name: "Texas" },
+  { code: "UT", name: "Utah" },
+  { code: "VT", name: "Vermont" },
+  { code: "VA", name: "Virginia" },
+  { code: "WA", name: "Washington" },
+  { code: "WV", name: "West Virginia" },
+  { code: "WI", name: "Wisconsin" },
+  { code: "WY", name: "Wyoming" }
 ];
 
 const COUNTRY_CODES = [
@@ -115,9 +150,9 @@ const COUNTRY_CODES = [
 
 const Register: React.FC = () => {
   const navigate = useNavigate();
-  const { register } = useAuth();
+  const { register, login } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
-  const [countryCode, setCountryCode] = useState("+86");
+  const [countryCode, setCountryCode] = useState("+1");
   const [step, setStep] = useState(1);
 
   const validationSchema = Yup.object({
@@ -133,24 +168,20 @@ const Register: React.FC = () => {
     phoneNumber: Yup.string()
       .matches(/^\d{10,15}$/, "Invalid phone number")
       .required("Phone number is required"),
-    hasCompany: Yup.string()
-      .required("Please select whether you have a company"),
     companyName: Yup.string()
-      .when("hasCompany", {
-        is: "yes",
-        then: (schema) => schema.required("Company name is required"),
-      }),
-    address: Yup.string()
-      .when("hasCompany", {
-        is: "yes",
-        then: (schema) => schema.required("Company address is required"),
-      }),
-    goals: Yup.array()
-      .min(1, "Please select at least one goal")
-      .required("Please select your goals"),
-    interests: Yup.array()
-      .min(1, "Please select at least one interest")
-      .required("Please select your interests"),
+      .required("Company name is required"),
+    industry: Yup.string()
+      .required("Industry is required"),
+    address1: Yup.string()
+      .required("Address is required"),
+    address2: Yup.string(),
+    city: Yup.string()
+      .required("City is required"),
+    state: Yup.string()
+      .required("State is required"),
+    zip: Yup.string()
+      .matches(/^[0-9]{5}$/, "ZIP code must be 5 digits")
+      .required("ZIP code is required"),
   });
 
   const formik = useFormik<FormValues>({
@@ -159,26 +190,60 @@ const Register: React.FC = () => {
       password: "",
       confirmPassword: "",
       phoneNumber: "",
-      hasCompany: "",
       companyName: "",
-      address: "",
-      goals: [],
-      interests: [],
+      industry: "",
+      address1: "",
+      address2: "",
+      city: "",
+      state: "",
+      zip: "",
     },
     validationSchema,
     onSubmit: async (values) => {
       try {
-        await register({
+        // New payload format for future use
+        const newPayload = {
+          email: values.email,
+          password: values.password,
+          phone: `${countryCode}${values.phoneNumber}`,
+          company: {
+            name: values.companyName,
+            industry: values.industry,
+            address1: values.address1,
+            address2: values.address2,
+            city: values.city,
+            state: values.state,
+            zip: values.zip
+          }
+        };
+        
+        console.log("New registration payload format:", newPayload);
+        
+        // Adapt to current AuthContext interface
+        const legacyPayload = {
           email: values.email,
           password: values.password,
           phoneNumber: values.phoneNumber,
-          hasCompany: values.hasCompany,
-          companyName: values.hasCompany === 'yes' ? values.companyName : undefined,
-          address: values.hasCompany === 'yes' ? values.address : undefined,
-          goals: values.goals,
-          interests: values.interests
-        });
-        navigate("/login");
+          hasCompany: "yes",
+          companyName: values.companyName,
+          address: `${values.address1}${values.address2 ? ', ' + values.address2 : ''}, ${values.city}, ${values.state} ${values.zip}`,
+          goals: [],
+          interests: []
+        };
+        
+        await register(legacyPayload);
+        
+        // Simulate successful registration and auto-login
+        const fakeToken = "fake-jwt-token-" + Math.random().toString(36).substring(7);
+        const newUser = {
+          id: "user-" + Math.random().toString(36).substring(7),
+          email: values.email,
+          userType: 'test' as const,
+          name: values.companyName
+        };
+        
+        login(fakeToken, newUser);
+        navigate("/");
       } catch (error) {
         console.error("Registration failed:", error);
       }
@@ -196,28 +261,18 @@ const Register: React.FC = () => {
         formik.validateField('password'),
         formik.validateField('confirmPassword'),
         formik.validateField('phoneNumber')
-      ]).then(() => {
-        if (!formik.errors.email && !formik.errors.password && 
-            !formik.errors.confirmPassword && !formik.errors.phoneNumber) {
+      ]).then((results) => {
+        // Check if all validations passed (no errors returned)
+        const hasErrors = results.some(error => error);
+        if (!hasErrors) {
           setStep(2);
-        }
-      });
-    } else if (step === 2) {
-      const validations = [formik.validateField('hasCompany')];
-      if (formik.values.hasCompany === 'yes') {
-        validations.push(formik.validateField('companyName'));
-        validations.push(formik.validateField('address'));
-      }
-      Promise.all(validations).then(() => {
-        if (!formik.errors.hasCompany && !formik.errors.companyName && !formik.errors.address) {
-          setStep(3);
         }
       });
     }
   };
 
   const handleBack = () => {
-    setStep(step - 1);
+    setStep(1);
   };
 
   const renderStep1 = () => (
@@ -315,160 +370,120 @@ const Register: React.FC = () => {
   const renderStep2 = () => (
     <>
       <Typography variant="subtitle1" gutterBottom>
-        Do you have a company? *
-      </Typography>
-      <FormControl fullWidth error={formik.touched.hasCompany && Boolean(formik.errors.hasCompany)}>
-        <Select
-          id="hasCompany"
-          name="hasCompany"
-          value={formik.values.hasCompany}
-          onChange={formik.handleChange}
-        >
-          <MenuItem value="yes">Yes</MenuItem>
-          <MenuItem value="no">No</MenuItem>
-        </Select>
-        {formik.touched.hasCompany && formik.errors.hasCompany && (
-          <FormHelperText>{formik.errors.hasCompany}</FormHelperText>
-        )}
-      </FormControl>
-
-      {formik.values.hasCompany === "yes" && (
-        <>
-          <Typography variant="subtitle1" mt={3} gutterBottom>
-            Company Name *
-          </Typography>
-          <TextField
-            fullWidth
-            variant="outlined"
-            id="companyName"
-            name="companyName"
-            value={formik.values.companyName}
-            onChange={formik.handleChange}
-            error={formik.touched.companyName && Boolean(formik.errors.companyName)}
-            helperText={formik.touched.companyName && formik.errors.companyName}
-            placeholder="Enter your company name"
-          />
-
-          <Typography variant="subtitle1" mt={3} gutterBottom>
-            Company Address *
-          </Typography>
-          <TextField
-            fullWidth
-            variant="outlined"
-            id="address"
-            name="address"
-            value={formik.values.address}
-            onChange={formik.handleChange}
-            error={formik.touched.address && Boolean(formik.errors.address)}
-            helperText={formik.touched.address && formik.errors.address}
-            placeholder="Enter your company address"
-            multiline
-            rows={3}
-          />
-        </>
-      )}
-    </>
-  );
-
-  const renderStep3 = () => (
-    <>
-      <Typography variant="subtitle1" gutterBottom>
-        What are your goals and needs? *
-      </Typography>
-      <FormControl fullWidth error={formik.touched.goals && Boolean(formik.errors.goals)}>
-        <Select
-          multiple
-          id="goals"
-          name="goals"
-          value={formik.values.goals}
-          onChange={formik.handleChange}
-          renderValue={(selected) => (
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-              {selected.map((value) => (
-                <Chip key={value} label={value} />
-              ))}
-            </Box>
-          )}
-        >
-          {GOALS.map((goal) => (
-            <MenuItem key={goal} value={goal}>
-              {goal}
-            </MenuItem>
-          ))}
-        </Select>
-        {formik.touched.goals && formik.errors.goals && (
-          <FormHelperText>{formik.errors.goals}</FormHelperText>
-        )}
-      </FormControl>
-
-      <Typography variant="subtitle1" mt={3} gutterBottom>
-        What are you interested in? *
-      </Typography>
-      <FormControl fullWidth error={formik.touched.interests && Boolean(formik.errors.interests)}>
-        <Select
-          multiple
-          id="interests"
-          name="interests"
-          value={formik.values.interests}
-          onChange={formik.handleChange}
-          renderValue={(selected) => (
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-              {selected.map((value) => (
-                <Chip key={value} label={value} />
-              ))}
-            </Box>
-          )}
-        >
-          {INTERESTS.map((interest) => (
-            <MenuItem key={interest} value={interest}>
-              {interest}
-            </MenuItem>
-          ))}
-        </Select>
-        {formik.touched.interests && formik.errors.interests && (
-          <FormHelperText>{formik.errors.interests}</FormHelperText>
-        )}
-      </FormControl>
-
-      <Typography variant="subtitle1" mt={3} gutterBottom>
-        Custom Goals (Optional)
+        Company Name *
       </Typography>
       <TextField
         fullWidth
         variant="outlined"
-        placeholder="Enter your custom goals (press Enter to add)"
-        onKeyPress={(e) => {
-          if (e.key === 'Enter') {
-            e.preventDefault();
-            const input = e.target as HTMLInputElement;
-            if (input.value.trim()) {
-              const newGoals = [...formik.values.goals, input.value.trim()];
-              formik.setFieldValue('goals', newGoals);
-              input.value = '';
-            }
-          }
-        }}
+        id="companyName"
+        name="companyName"
+        value={formik.values.companyName}
+        onChange={formik.handleChange}
+        error={formik.touched.companyName && Boolean(formik.errors.companyName)}
+        helperText={formik.touched.companyName && formik.errors.companyName}
+        placeholder="Enter your company name"
       />
 
       <Typography variant="subtitle1" mt={3} gutterBottom>
-        Custom Interests (Optional)
+        Industry *
+      </Typography>
+      <FormControl fullWidth error={formik.touched.industry && Boolean(formik.errors.industry)}>
+        <Select
+          id="industry"
+          name="industry"
+          value={formik.values.industry}
+          onChange={formik.handleChange}
+          displayEmpty
+        >
+          <MenuItem value="" disabled>
+            Select your industry
+          </MenuItem>
+          {INDUSTRIES.map((industry) => (
+            <MenuItem key={industry} value={industry}>
+              {industry}
+            </MenuItem>
+          ))}
+        </Select>
+        {formik.touched.industry && formik.errors.industry && (
+          <FormHelperText>{formik.errors.industry}</FormHelperText>
+        )}
+      </FormControl>
+
+      <Typography variant="subtitle1" mt={3} gutterBottom>
+        Address *
       </Typography>
       <TextField
         fullWidth
         variant="outlined"
-        placeholder="Enter your custom interests (press Enter to add)"
-        onKeyPress={(e) => {
-          if (e.key === 'Enter') {
-            e.preventDefault();
-            const input = e.target as HTMLInputElement;
-            if (input.value.trim()) {
-              const newInterests = [...formik.values.interests, input.value.trim()];
-              formik.setFieldValue('interests', newInterests);
-              input.value = '';
-            }
-          }
-        }}
+        id="address1"
+        name="address1"
+        value={formik.values.address1}
+        onChange={formik.handleChange}
+        error={formik.touched.address1 && Boolean(formik.errors.address1)}
+        helperText={formik.touched.address1 && formik.errors.address1}
+        placeholder="Street address"
+        sx={{ mb: 2 }}
       />
+      
+      <TextField
+        fullWidth
+        variant="outlined"
+        id="address2"
+        name="address2"
+        value={formik.values.address2}
+        onChange={formik.handleChange}
+        error={formik.touched.address2 && Boolean(formik.errors.address2)}
+        helperText={formik.touched.address2 && formik.errors.address2}
+        placeholder="Apartment, suite, etc. (optional)"
+      />
+
+      <Box sx={{ display: "flex", gap: 2, mt: 3 }}>
+        <TextField
+          variant="outlined"
+          id="city"
+          name="city"
+          value={formik.values.city}
+          onChange={formik.handleChange}
+          error={formik.touched.city && Boolean(formik.errors.city)}
+          helperText={formik.touched.city && formik.errors.city}
+          placeholder="City"
+          sx={{ flex: 1 }}
+        />
+        
+        <FormControl sx={{ flex: 1 }} error={formik.touched.state && Boolean(formik.errors.state)}>
+          <Select
+            id="state"
+            name="state"
+            value={formik.values.state}
+            onChange={formik.handleChange}
+            displayEmpty
+          >
+            <MenuItem value="" disabled>
+              State
+            </MenuItem>
+            {US_STATES.map(({ code, name }) => (
+              <MenuItem key={code} value={code}>
+                {code} - {name}
+              </MenuItem>
+            ))}
+          </Select>
+          {formik.touched.state && formik.errors.state && (
+            <FormHelperText>{formik.errors.state}</FormHelperText>
+          )}
+        </FormControl>
+        
+        <TextField
+          variant="outlined"
+          id="zip"
+          name="zip"
+          value={formik.values.zip}
+          onChange={formik.handleChange}
+          error={formik.touched.zip && Boolean(formik.errors.zip)}
+          helperText={formik.touched.zip && formik.errors.zip}
+          placeholder="ZIP"
+          sx={{ width: 120 }}
+        />
+      </Box>
     </>
   );
 
@@ -498,14 +513,11 @@ const Register: React.FC = () => {
               <Typography variant="subtitle1" color={step >= 2 ? '#7442BF' : 'text.secondary'}>
                 Step 2: Company Details
               </Typography>
-              <Typography variant="subtitle1" color={step >= 3 ? '#7442BF' : 'text.secondary'}>
-                Step 3: Goals & Interests
-              </Typography>
             </Box>
             <Box sx={{ width: '100%', height: 4, bgcolor: 'grey.200', borderRadius: 2 }}>
               <Box
                 sx={{
-                  width: `${((step - 1) / 2) * 100}%`,
+                  width: `${((step - 1) / 1) * 100}%`,
                   height: '100%',
                   bgcolor: '#7442BF',
                   borderRadius: 2,
@@ -518,7 +530,6 @@ const Register: React.FC = () => {
           <Box component="form" onSubmit={formik.handleSubmit} width="100%">
             {step === 1 && renderStep1()}
             {step === 2 && renderStep2()}
-            {step === 3 && renderStep3()}
 
             <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 4 }}>
               {step > 1 && (
@@ -540,7 +551,7 @@ const Register: React.FC = () => {
                   Back
                 </Button>
               )}
-              {step < 3 ? (
+              {step < 2 ? (
                 <Button
                   variant="contained"
                   onClick={handleNext}
@@ -566,7 +577,7 @@ const Register: React.FC = () => {
                     '&:hover': { bgcolor: '#5e3399' } 
                   }}
                 >
-                  Register
+                  Sign Up
                 </Button>
               )}
             </Box>

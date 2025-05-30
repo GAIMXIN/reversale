@@ -12,6 +12,7 @@ import {
   MenuItem,
   ListItemIcon,
   ListItemText,
+  CircularProgress,
 } from "@mui/material";
 import { 
   Send as SendIcon, 
@@ -25,6 +26,7 @@ import {
 } from "@mui/icons-material";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useRequest } from '../../contexts/RequestContext';
 import logo from '../../assests/img/logo.png';
 
 interface Message {
@@ -42,7 +44,9 @@ export default function ChatScreen({ isAuthenticated = false }: ChatScreenProps)
   const [isRecording, setIsRecording] = useState(false);
   const [showTextInput, setShowTextInput] = useState(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [isCreatingRequest, setIsCreatingRequest] = useState(false);
   const navigate = useNavigate();
+  const { createRequestFromText } = useRequest();
   
   // 处理聊天历史记录加载
   useEffect(() => {
@@ -89,117 +93,38 @@ export default function ChatScreen({ isAuthenticated = false }: ChatScreenProps)
     const userMessage: Message = { role: 'user', content: input };
     setMessages(prev => [...prev, userMessage]);
     const userInput = input.toLowerCase();
+    const originalInput = input;
     setInput("");
 
-    // Simulate AI analysis and response
+    if (isAuthenticated) {
+      // For authenticated users, create request summary and navigate to review page
+      setIsCreatingRequest(true);
+      
+      try {
+        const requestSummary = await createRequestFromText(originalInput);
+        navigate(`/request-review/${requestSummary.id}`);
+      } catch (error) {
+        console.error('Error creating request:', error);
+        setIsCreatingRequest(false);
+        
+        // Fallback to chat response if request creation fails
+        setTimeout(() => {
+          const aiResponse: Message = { 
+            role: 'assistant', 
+            content: "I apologize, but I'm having trouble processing your request right now. Please try again in a moment." 
+          };
+          setMessages(prev => [...prev, aiResponse]);
+        }, 1000);
+      }
+      return;
+    }
+
+    // For non-authenticated users, continue with existing chat flow
     setTimeout(() => {
       let aiResponse = "";
       
-      if (isAuthenticated) {
-        // Authenticated users get unrestricted AI responses
-        if (userInput.includes('ecommerce') || userInput.includes('e-commerce') || userInput.includes('online store') || userInput.includes('selling online')) {
-          aiResponse = `Based on your e-commerce business, here's my comprehensive analysis:
-
-🎯 **Detailed Pain Point Analysis:**
-• Customer acquisition costs have increased by 38% year-over-year
-• Cart abandonment rate averaging 69.8% (industry benchmark: 70%)
-• Inventory management inefficiencies causing 15% stock-outs
-• Competition from Amazon and other platforms reducing margins by 12%
-
-💡 **Strategic Recommendations:**
-• Implement abandoned cart recovery sequences (can recover 15-25% of lost sales)
-• Optimize product pages for conversion (A/B testing can improve by 20-30%)
-• Implement dynamic pricing strategies
-• Focus on customer lifetime value optimization
-
-📊 **Expected Results:**
-• 25-40% increase in conversion rates
-• 30-50% reduction in customer acquisition costs
-• 20-35% improvement in inventory turnover
-
-🔗 **Professional Network Access:**
-I can connect you with verified specialists who have achieved these results for similar businesses. Would you like me to recommend specific experts based on your current priorities?`;
-        } else if (userInput.includes('restaurant') || userInput.includes('food') || userInput.includes('cafe') || userInput.includes('dining')) {
-          aiResponse = `Comprehensive analysis for your food service business:
-
-🎯 **Industry-Specific Challenges:**
-• Staff turnover averaging 75% annually (industry standard: 70-80%)
-• Food waste representing 4-10% of total food purchases
-• Online ordering integration challenges affecting 30% of potential revenue
-• Review management across 15+ platforms
-
-💡 **Optimization Strategies:**
-• Implement staff retention programs (can reduce turnover by 25-40%)
-• Deploy inventory management systems to reduce waste by 20-30%
-• Integrate unified online ordering platform
-• Automate review response and reputation management
-
-📊 **Projected Improvements:**
-• 15-25% reduction in labor costs
-• 20-30% decrease in food waste
-• 25-40% increase in online orders
-• 15-20% improvement in customer satisfaction scores
-
-🚀 **Next Steps:**
-I can provide detailed implementation roadmaps and connect you with specialists who have successfully executed these strategies. What's your primary focus area?`;
-        } else if (userInput.includes('medical') || userInput.includes('doctor') || userInput.includes('healthcare') || userInput.includes('clinic') || userInput.includes('soap') || userInput.includes('patient') || userInput.includes('physician') || userInput.includes('hospital') || userInput.includes('wife') || userInput.includes('husband') || userInput.includes('notes') || userInput.includes('documentation') || userInput.includes('evening') || userInput.includes('home late') || userInput.includes('work from home') || userInput.includes('family time')) {
-          aiResponse = `🏥 **Healthcare Practice Analysis - Real Case Study:**
-
-I understand the challenges in medical practice! A doctor's wife recently told us: *"My husband always comes home late and brings his work of writing SOAP notes to home to work during evenings."*
-
-🎯 **Common Healthcare Pain Points:**
-• Excessive documentation time (2-3 hours daily)
-• SOAP notes and medical records consume 35-40% of a doctor's time
-• Administrative burden and physician burnout
-• Work-life balance challenges
-
-💡 **Preview of Our Solution - NuroScript:**
-• Ambient dictation technology that auto-generates SOAP notes
-• Real-time transcription during patient consultations
-• 60-70% reduction in documentation time
-• Physicians get their evenings back with family
-
-💡 **Potential Solutions I Can Connect You With:**
-• **Dr. Sarah Mitchell** - Healthcare Workflow Optimization Specialist
-• **TechMed Solutions** - Medical Documentation Automation
-• **NuroScript Team** - Ambient Dictation Technology Experts
-• **Dr. James Chen** - Physician Burnout Prevention Consultant
-
-🔐 **Want to see the FULL NuroScript demo and solve this exact problem?**
-**👉 PLEASE LOGIN** to access:
-• Live interactive demo of ambient dictation technology
-• Complete case studies showing 60-70% documentation time reduction
-• Direct contact with healthcare technology specialists
-• Video testimonials from physicians who got their evenings back
-• Free trial of NuroScript for your practice
-
-**🚀 Ready to transform your practice and reclaim your personal time? LOGIN NOW to get started!**`;
-        } else {
-          // Generic helpful response for authenticated users
-          aiResponse = `I'm here to provide comprehensive business analysis and solutions without any restrictions!
-
-🎯 **What I Can Help You With:**
-• Detailed industry analysis and benchmarking
-• Strategic recommendations with projected ROI
-• Implementation roadmaps and timelines
-• Direct connections to verified professionals
-• Case studies and success stories
-• Custom solutions for your specific challenges
-
-💡 **How to Get Started:**
-Simply describe your business situation, challenges, or goals, and I'll provide:
-• In-depth analysis with data-driven insights
-• Specific, actionable recommendations
-• Expected outcomes and timelines
-• Professional network connections when relevant
-
-🚀 **No Limitations:**
-As an authenticated user, you have full access to all features and detailed insights. What would you like to explore first?`;
-        }
-      } else {
-        // Non-authenticated users get limited responses with login prompts
-        if (userInput.includes('ecommerce') || userInput.includes('e-commerce') || userInput.includes('online store') || userInput.includes('selling online')) {
-          aiResponse = `Based on your e-commerce business, I've identified several key pain points:
+      if (userInput.includes('ecommerce') || userInput.includes('e-commerce') || userInput.includes('online store') || userInput.includes('selling online')) {
+        aiResponse = `Based on your e-commerce business, I've identified several key pain points:
 
 🎯 **Main Pain Points:**
 • Customer acquisition costs are rising
@@ -217,8 +142,8 @@ As an authenticated user, you have full access to all features and detailed insi
 Please **login** to access their contact information, portfolios, and schedule consultations. Our verified network of experts is ready to help you solve these challenges!
 
 Would you like me to provide more specific advice about your e-commerce challenges?`;
-        } else if (userInput.includes('restaurant') || userInput.includes('food') || userInput.includes('cafe') || userInput.includes('dining')) {
-          aiResponse = `I see you're in the food service industry. Here are the common pain points I've identified:
+      } else if (userInput.includes('restaurant') || userInput.includes('food') || userInput.includes('cafe') || userInput.includes('dining')) {
+        aiResponse = `I see you're in the food service industry. Here are the common pain points I've identified:
 
 🎯 **Main Pain Points:**
 • Staff retention and training costs
@@ -236,8 +161,8 @@ Would you like me to provide more specific advice about your e-commerce challeng
 **Login** to access their profiles, case studies, and book consultations. These professionals have helped similar businesses increase efficiency by 30-40%!
 
 Which area would you like to focus on first?`;
-        } else if (userInput.includes('medical') || userInput.includes('doctor') || userInput.includes('healthcare') || userInput.includes('clinic') || userInput.includes('soap') || userInput.includes('patient') || userInput.includes('physician') || userInput.includes('hospital')) {
-          aiResponse = `🏥 **Healthcare Practice Analysis:**
+      } else if (userInput.includes('medical') || userInput.includes('doctor') || userInput.includes('healthcare') || userInput.includes('clinic') || userInput.includes('soap') || userInput.includes('patient') || userInput.includes('physician') || userInput.includes('hospital')) {
+        aiResponse = `🏥 **Healthcare Practice Analysis:**
 
 I understand the challenges in medical practice! A doctor's wife recently told us: *"My husband always comes home late and brings his work of writing SOAP notes to home to work during evenings."*
 
@@ -261,8 +186,8 @@ I understand the challenges in medical practice! A doctor's wife recently told u
 • Video testimonials from physicians who got their evenings back
 
 **Ready to transform your practice and reclaim your personal time?**`;
-        } else if (userInput.includes('tech') || userInput.includes('software') || userInput.includes('app') || userInput.includes('saas')) {
-          aiResponse = `For your tech business, I've analyzed these critical pain points:
+      } else if (userInput.includes('tech') || userInput.includes('software') || userInput.includes('app') || userInput.includes('saas')) {
+        aiResponse = `For your tech business, I've analyzed these critical pain points:
 
 🎯 **Main Pain Points:**
 • User acquisition and retention
@@ -280,31 +205,35 @@ I understand the challenges in medical practice! A doctor's wife recently told u
 **Login** to access their contact information, case studies, and book consultations. These professionals have helped similar businesses scale efficiently!
 
 What's your biggest challenge right now?`;
-        } else {
-          // Generic response for non-authenticated users
-          aiResponse = `I can help you analyze your business challenges and connect you with the right professionals!
+      } else {
+        // Generic response for non-authenticated users
+        aiResponse = `I can help you identify business challenges and connect you with the right professionals!
 
-🎯 **What I Can Help You With:**
-• Business pain point analysis
-• Industry-specific insights
-• Professional network connections
-• Growth strategy recommendations
+🎯 **Common Business Pain Points I Help With:**
+• Operations inefficiency
+• Customer acquisition challenges
+• Technology implementation
+• Staff management issues
+• Financial optimization
 
-💡 **How It Works:**
-1. Tell me about your business or industry
-2. I'll analyze your main challenges
-3. I'll suggest relevant professionals who can help
-4. Login to connect with them directly
+💡 **How I Can Help:**
+• Analyze your specific business situation
+• Identify key pain points and opportunities
+• Connect you with verified industry experts
+• Provide implementation roadmaps
 
-🔐 **Ready to get started?**
-Simply describe your business situation, and I'll provide targeted insights and professional connections. For full access to contact details and detailed consultations, please login.
+🔐 **Want personalized analysis and expert connections?**
+**Please login** to access:
+• Detailed business analysis
+• Direct contact with specialists
+• Custom solution recommendations
+• Case studies and success stories
 
-What industry or business challenge would you like to discuss?`;
-        }
+What specific business challenge would you like help with?`;
       }
 
-      const assistantMessage: Message = { role: 'assistant', content: aiResponse };
-      setMessages(prev => [...prev, assistantMessage]);
+      const aiMessage: Message = { role: 'assistant', content: aiResponse };
+      setMessages(prev => [...prev, aiMessage]);
     }, 1000);
   };
 
@@ -585,11 +514,11 @@ What industry or business challenge would you like to discuss?`;
               color: '#000',
               textAlign: 'center',
               mb: 3,
-              fontSize: { xs: '2rem', md: '3rem' },
+              fontSize: { xs: '2rem', md: '2rem' },
               fontFamily: 'Inter, sans-serif'
             }}
           >
-            What's holding your business back?
+            What's the pinpoint in your business operations today?
           </Typography>
 
           {/* Placeholder Input */}
@@ -618,7 +547,7 @@ What industry or business challenge would you like to discuss?`;
             <TextField
               fullWidth
               variant="outlined"
-              placeholder="Tap the mic and speak your need. I will summarize it for you."
+              placeholder="Tap the mic or text your need here. I will summarize it for you."
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyPress={(e) => {
@@ -660,7 +589,7 @@ What industry or business challenge would you like to discuss?`;
             </IconButton>
             <IconButton 
               onClick={handleSend}
-              disabled={!input.trim()}
+              disabled={!input.trim() || isCreatingRequest}
               sx={{ 
                 bgcolor: '#7442BF',
                 color: 'white',
@@ -678,7 +607,11 @@ What industry or business challenge would you like to discuss?`;
                 transition: 'all 0.2s ease'
               }}
             >
-              <SendIcon sx={{ fontSize: 20 }} />
+              {isCreatingRequest ? (
+                <CircularProgress size={20} sx={{ color: 'white' }} />
+              ) : (
+                <SendIcon sx={{ fontSize: 20 }} />
+              )}
             </IconButton>
 
             {/* Action Menu */}
@@ -762,10 +695,14 @@ What industry or business challenge would you like to discuss?`;
 
           {/* Chat Messages for Landing Page */}
           {messages.length > 0 && (
-            <Container maxWidth="md" sx={{ 
-              mt: 4,
-              width: '100%'
-            }}>
+            <Container 
+              maxWidth={false}
+              sx={{ 
+                mt: 4,
+                width: '100%',
+                px: 0,
+              }}
+            >
               <Box sx={{ 
                 overflow: 'auto', 
                 px: 1
@@ -868,11 +805,11 @@ What industry or business challenge would you like to discuss?`;
             color: '#000',
             textAlign: 'center',
             mb: 3,
-            fontSize: { xs: '2rem', md: '3rem' },
+            fontSize: { xs: '2rem', md: '2rem' },
             fontFamily: 'Inter, sans-serif'
           }}
         >
-          What's holding your business back?
+          What's the pinpoint in your business operations today?
         </Typography>
 
         {/* Input Field */}
@@ -901,7 +838,7 @@ What industry or business challenge would you like to discuss?`;
           <TextField
             fullWidth
             variant="outlined"
-            placeholder="Tap the mic and speak your need. I will summarize it for you."
+            placeholder="Tap the mic or text your need here. I will summarize it for you."
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyPress={(e) => {
@@ -943,7 +880,7 @@ What industry or business challenge would you like to discuss?`;
           </IconButton>
           <IconButton 
             onClick={handleSend}
-            disabled={!input.trim()}
+            disabled={!input.trim() || isCreatingRequest}
             sx={{ 
               bgcolor: '#7442BF',
               color: 'white',
@@ -961,7 +898,11 @@ What industry or business challenge would you like to discuss?`;
               transition: 'all 0.2s ease'
             }}
           >
-            <SendIcon sx={{ fontSize: 20 }} />
+            {isCreatingRequest ? (
+              <CircularProgress size={20} sx={{ color: 'white' }} />
+            ) : (
+              <SendIcon sx={{ fontSize: 20 }} />
+            )}
           </IconButton>
 
           {/* Action Menu */}
@@ -1045,10 +986,14 @@ What industry or business challenge would you like to discuss?`;
 
         {/* Chat Messages for Authenticated Users */}
         {messages.length > 0 && (
-          <Container maxWidth="md" sx={{ 
-            mt: 4,
-            width: '100%'
-          }}>
+          <Container 
+            maxWidth={false}
+            sx={{ 
+              mt: 4,
+              width: '100%',
+              px: 0,
+            }}
+          >
             <Box sx={{ 
               overflow: 'auto', 
               px: 1

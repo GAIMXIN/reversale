@@ -49,7 +49,7 @@ export default function ContactSalesman() {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: 1,
-      text: "Hello! I'm Sarah from ReverSSale sales team. I'm here to help you find the perfect products and solutions for your business. How can I assist you today?",
+      text: "Hello! I'm Sarah from ReverSale sales team. I'm here to help you find the perfect products and solutions for your business. How can I assist you today?",
       sender: 'agent',
       timestamp: new Date(),
       agentName: 'Sarah Johnson'
@@ -84,7 +84,7 @@ export default function ContactSalesman() {
     setMessages(prev => [...prev, newMessage]);
     setMessage('');
 
-    // 模拟人工客服回复
+    // Simulate agent response
     setTimeout(() => {
       const responses = [
         "That's a great question! Let me check our latest product catalog for you. Based on your business profile, I have some excellent recommendations.",
@@ -117,7 +117,7 @@ export default function ContactSalesman() {
 
     setMessages(prev => [...prev, newMessage]);
 
-    // 根据快捷操作给出相应回复
+    // Generate appropriate response based on quick action
     setTimeout(() => {
       let response: Message;
       
@@ -193,7 +193,11 @@ export default function ContactSalesman() {
   };
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 8, mb: 2, height: 'calc(100vh - 100px)' }}>
+    <Box sx={{ 
+      mt: 8, 
+      mb: 2, 
+      height: 'calc(100vh - 100px)',
+    }}>
       {/* Header */}
       <Paper sx={{ 
         p: 3, 
@@ -377,9 +381,7 @@ export default function ContactSalesman() {
                 bgcolor: isRecording ? '#ffebee' : '#f3e5f5',
                 '&:hover': { 
                   bgcolor: isRecording ? '#ffcdd2' : '#e1bee7',
-                  transform: 'scale(1.05)'
-                },
-                transition: 'all 0.2s ease'
+                }
               }}
               title="Voice Input"
             >
@@ -393,13 +395,11 @@ export default function ContactSalesman() {
                 color: 'white',
                 '&:hover': { 
                   bgcolor: '#5e3399',
-                  transform: 'scale(1.05)'
                 },
                 '&:disabled': {
                   bgcolor: '#e0e0e0',
                   color: '#9e9e9e'
-                },
-                transition: 'all 0.2s ease'
+                }
               }}
             >
               <Send />
@@ -422,6 +422,6 @@ export default function ContactSalesman() {
           </Box>
         </Box>
       </Paper>
-    </Container>
+    </Box>
   );
 } 

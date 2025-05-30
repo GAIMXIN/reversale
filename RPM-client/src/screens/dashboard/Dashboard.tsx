@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Container,
@@ -12,6 +13,14 @@ import {
   useTheme,
   LinearProgress,
   Badge,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Button,
+  Fab,
 } from '@mui/material';
 import {
   Person,
@@ -20,250 +29,323 @@ import {
   Email,
   Flag,
   Interests,
-  TrendingUp,
-  Groups,
-  Analytics,
   Notifications,
   Settings,
   Assignment,
+  AccountBalance,
+  Payment,
+  Receipt,
+  Add as AddIcon,
+  TrendingUp,
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
+
+interface DashboardData {
+  activeRequests: number;
+  fundsEscrow: number;
+  totalPaid: number;
+  pendingInvoices: number;
+  recentRequests: Array<{
+    id: string;
+    date: string;
+    name: string;
+    status: 'FUNDS_HELD' | 'RELEASED' | 'COMPLETED' | 'PENDING';
+  }>;
+}
 
 const Dashboard: React.FC = () => {
   const theme = useTheme();
   const { logout } = useAuth();
+  const navigate = useNavigate();
 
-  // Mock user data
-  const userData = {
-    name: 'John Smith',
-    email: 'test@example.com',
-    phoneNumber: '+86 1234567890',
-    hasCompany: 'yes',
-    companyName: 'Tech Innovations Ltd',
-    address: '123 Business District, Tech City',
-    goals: ['Increase Sales', 'Improve Customer Service', 'Expand Market'],
-    interests: ['E-commerce', 'Technology', 'AI Solutions'],
-    profileCompletion: 85,
-    connectionsCount: 12,
-    activeProjects: 3,
-  };
+  // Mock dashboard data - similar to billing seed data
+  const [dashboardData] = useState<DashboardData>({
+    activeRequests: 2,
+    fundsEscrow: 1250,
+    totalPaid: 4250,
+    pendingInvoices: 1,
+    recentRequests: [
+      {
+        id: '1',
+        date: '2024-06-01',
+        name: 'Self-service Ordering System',
+        status: 'FUNDS_HELD'
+      },
+      {
+        id: '2',
+        date: '2024-05-28',
+        name: 'Therapist Notes Agent',
+        status: 'RELEASED'
+      },
+      {
+        id: '3',
+        date: '2024-05-25',
+        name: 'Customer Analytics Dashboard',
+        status: 'COMPLETED'
+      },
+      {
+        id: '4',
+        date: '2024-05-20',
+        name: 'Inventory Management System',
+        status: 'RELEASED'
+      },
+      {
+        id: '5',
+        date: '2024-05-15',
+        name: 'E-commerce Integration',
+        status: 'PENDING'
+      }
+    ]
+  });
 
-  // Mock stats data
-  const statsData = [
-    { label: 'Active Connections', value: '12', icon: Groups, color: '#7442BF' },
-    { label: 'Projects Completed', value: '8', icon: Assignment, color: '#9C27B0' },
-    { label: 'Success Rate', value: '94%', icon: TrendingUp, color: '#E91E63' },
-    { label: 'Total Consultations', value: '24', icon: Analytics, color: '#FF6B6B' },
+  const statsCards = [
+    {
+      title: 'Active Requests',
+      value: dashboardData.activeRequests,
+      icon: Assignment,
+      color: '#7442BF',
+      format: 'number' as const
+    },
+    {
+      title: 'Funds in Escrow',
+      value: dashboardData.fundsEscrow,
+      icon: AccountBalance,
+      color: '#FF9800',
+      format: 'currency' as const
+    },
+    {
+      title: 'Total Paid',
+      value: dashboardData.totalPaid,
+      icon: Payment,
+      color: '#4CAF50',
+      format: 'currency' as const
+    },
+    {
+      title: 'Pending Invoices',
+      value: dashboardData.pendingInvoices,
+      icon: Receipt,
+      color: '#2196F3',
+      format: 'number' as const
+    }
   ];
 
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(amount);
+  };
+
+  const formatValue = (value: number, format: 'number' | 'currency') => {
+    return format === 'currency' ? formatCurrency(value) : value.toString();
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'FUNDS_HELD':
+        return 'warning';
+      case 'RELEASED':
+        return 'success';
+      case 'COMPLETED':
+        return 'success';
+      case 'PENDING':
+        return 'info';
+      default:
+        return 'default';
+    }
+  };
+
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case 'FUNDS_HELD':
+        return 'Funds Held';
+      case 'RELEASED':
+        return 'Released';
+      case 'COMPLETED':
+        return 'Completed';
+      case 'PENDING':
+        return 'Pending';
+      default:
+        return status;
+    }
+  };
+
+  const handleRequestClick = (requestId: string) => {
+    // Navigate to request detail page (placeholder for now)
+    console.log('Navigate to request:', requestId);
+    // navigate(`/request/${requestId}`);
+  };
+
+  const handleNewRequest = () => {
+    navigate('/');
+  };
+
   return (
-    <Box sx={{ 
-      minHeight: '100vh',
-      bgcolor: '#f8f9fa',
-      pt: 8
-    }}>
-      <Container maxWidth="xl" sx={{ py: 3 }}>
-        {/* Header Section */}
-        <Box sx={{ mb: 4 }}>
-          <Box sx={{ 
-            display: 'flex', 
-            flexDirection: { xs: 'column', md: 'row' },
-            alignItems: { xs: 'flex-start', md: 'center' },
-            justifyContent: 'space-between',
-            gap: 3
+    <Box sx={{ mt: 8, mb: 4 }}>
+      {/* Header */}
+      <Paper sx={{ 
+        p: 4, 
+        mb: 4, 
+        background: 'linear-gradient(135deg, #7442BF 0%, #9C27B0 100%)', 
+        color: 'white' 
+      }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+          <TrendingUp sx={{ fontSize: 40 }} />
+          <Typography variant="h4" sx={{ fontWeight: 600 }}>
+            Dashboard
+          </Typography>
+        </Box>
+        <Typography variant="h6" sx={{ opacity: 0.9 }}>
+          Overview of your business requests and financial status
+        </Typography>
+      </Paper>
+
+      {/* Stats Cards */}
+      <Box sx={{ 
+        display: 'grid',
+        gridTemplateColumns: { xs: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' },
+        gap: 3,
+        mb: 4
+      }}>
+        {statsCards.map((stat, index) => (
+          <Card key={index} sx={{ 
+            height: '100%',
+            background: `linear-gradient(135deg, ${stat.color}15 0%, ${stat.color}05 100%)`,
+            border: `1px solid ${stat.color}20`,
+            borderRadius: 3,
+            transition: 'all 0.3s ease',
+            '&:hover': {
+              transform: 'translateY(-4px)',
+              boxShadow: `0 8px 25px ${stat.color}25`,
+              border: `1px solid ${stat.color}40`,
+            }
           }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-              <Avatar
-                sx={{
-                  width: 60,
-                  height: 60,
-                  bgcolor: 'linear-gradient(135deg, #7442BF 0%, #9C27B0 100%)',
-                  fontSize: '1.5rem',
-                  fontWeight: 600,
-                }}
-              >
-                {userData.name.split(' ').map(n => n[0]).join('')}
-              </Avatar>
-              <Box>
-                <Typography variant="h4" sx={{ 
-                  fontWeight: 700,
-                  background: 'linear-gradient(135deg, #7442BF 0%, #9C27B0 50%, #E91E63 100%)',
-                  backgroundClip: 'text',
-                  textFillColor: 'transparent',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                }}>
-                  Welcome back, {userData.name.split(' ')[0]}!
-                </Typography>
-                <Typography variant="subtitle1" color="text.secondary">
-                  {userData.companyName} • {userData.connectionsCount} active connections
+            <CardContent sx={{ p: 3 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+                <stat.icon sx={{ fontSize: 32, color: stat.color }} />
+                <Typography variant="h4" sx={{ fontWeight: 700, color: stat.color }}>
+                  {formatValue(stat.value, stat.format)}
                 </Typography>
               </Box>
-            </Box>
-            <Box sx={{ display: 'flex', gap: 1 }}>
-              <IconButton sx={{ bgcolor: 'white', boxShadow: 1 }}>
-                <Badge badgeContent={3} color="error">
-                  <Notifications />
-                </Badge>
-              </IconButton>
-              <IconButton sx={{ bgcolor: 'white', boxShadow: 1 }}>
-                <Settings />
-              </IconButton>
-            </Box>
-          </Box>
-        </Box>
+              <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
+                {stat.title}
+              </Typography>
+            </CardContent>
+          </Card>
+        ))}
+      </Box>
 
-        {/* Stats Cards */}
-        <Box sx={{ 
-          display: 'grid',
-          gridTemplateColumns: { xs: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' },
-          gap: 3,
-          mb: 4
-        }}>
-          {statsData.map((stat, index) => (
-            <Card key={index} sx={{ 
-              height: '100%',
-              background: `linear-gradient(135deg, ${stat.color}15 0%, ${stat.color}05 100%)`,
-              border: `1px solid ${stat.color}20`,
+      {/* Recent Activity Table */}
+      <Paper sx={{ mb: 4 }}>
+        <Box sx={{ p: 3, borderBottom: '1px solid #e0e0e0' }}>
+          <Typography variant="h6" sx={{ fontWeight: 600, color: '#7442BF' }}>
+            Recent Activity
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Your 5 most recent requests
+          </Typography>
+        </Box>
+        
+        <TableContainer>
+          <Table>
+            <TableHead>
+              <TableRow sx={{ backgroundColor: '#f8f9fa' }}>
+                <TableCell sx={{ fontWeight: 600 }}>Date</TableCell>
+                <TableCell sx={{ fontWeight: 600 }}>Request Name</TableCell>
+                <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {dashboardData.recentRequests.map((request) => (
+                <TableRow 
+                  key={request.id} 
+                  hover
+                  onClick={() => handleRequestClick(request.id)}
+                  sx={{ 
+                    cursor: 'pointer',
+                    '&:hover': {
+                      backgroundColor: 'rgba(116, 66, 191, 0.04)'
+                    }
+                  }}
+                >
+                  <TableCell>
+                    {new Date(request.date).toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'short',
+                      day: 'numeric'
+                    })}
+                  </TableCell>
+                  <TableCell>
+                    <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                      {request.name}
+                    </Typography>
+                  </TableCell>
+                  <TableCell>
+                    <Chip 
+                      label={getStatusLabel(request.status)}
+                      color={getStatusColor(request.status) as any}
+                      size="small"
+                      sx={{ fontWeight: 500 }}
+                    />
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+
+        {/* Quick Action inside table container */}
+        <Box sx={{ p: 3, borderTop: '1px solid #e0e0e0', textAlign: 'center' }}>
+          <Button
+            variant="contained"
+            size="large"
+            startIcon={<AddIcon />}
+            onClick={handleNewRequest}
+            sx={{ 
+              background: 'linear-gradient(135deg, #7442BF 0%, #9C27B0 100%)',
+              boxShadow: '0 4px 15px rgba(116, 66, 191, 0.3)',
               borderRadius: 3,
-              transition: 'all 0.3s ease',
+              px: 4,
+              py: 1.5,
               '&:hover': {
-                transform: 'translateY(-4px)',
-                boxShadow: `0 8px 25px ${stat.color}25`,
-                border: `1px solid ${stat.color}40`,
-              }
-            }}>
-              <CardContent sx={{ p: 3 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-                  <stat.icon sx={{ fontSize: 32, color: stat.color }} />
-                  <Typography variant="h4" sx={{ fontWeight: 700, color: stat.color }}>
-                    {stat.value}
-                  </Typography>
-                </Box>
-                <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
-                  {stat.label}
-                </Typography>
-              </CardContent>
-            </Card>
-          ))}
+                background: 'linear-gradient(135deg, #5e3399 0%, #7b1fa2 100%)',
+                transform: 'translateY(-2px)',
+                boxShadow: '0 6px 20px rgba(116, 66, 191, 0.4)',
+              },
+              transition: 'all 0.2s ease',
+              fontSize: '1rem',
+              fontWeight: 600,
+            }}
+          >
+            New Request
+          </Button>
         </Box>
+      </Paper>
 
-        {/* User Profile Card */}
-        <Box sx={{ 
-          display: 'flex',
-          flexDirection: { xs: 'column', lg: 'row' },
-          gap: 4,
-          mb: 4
-        }}>
-          <Box sx={{ flex: 1 }}>
-            <Card sx={{ 
-              height: '100%',
-              background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
-              boxShadow: '0 8px 32px rgba(116, 66, 191, 0.1)',
-              border: '1px solid rgba(116, 66, 191, 0.1)',
-              borderRadius: 3
-            }}>
-              <CardContent sx={{ p: 4 }}>
-                <Typography variant="h6" sx={{ mb: 3, fontWeight: 600, color: '#7442BF' }}>
-                  Profile Overview
-                </Typography>
-
-                {/* Profile Completion */}
-                <Box sx={{ mb: 4 }}>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                    <Typography variant="body2" color="text.secondary">
-                      Profile Completion
-                    </Typography>
-                    <Typography variant="body2" sx={{ fontWeight: 600, color: '#7442BF' }}>
-                      {userData.profileCompletion}%
-                    </Typography>
-                  </Box>
-                  <LinearProgress 
-                    variant="determinate" 
-                    value={userData.profileCompletion} 
-                    sx={{ 
-                      height: 8, 
-                      borderRadius: 4,
-                      bgcolor: '#f0f0f0',
-                      '& .MuiLinearProgress-bar': {
-                        background: 'linear-gradient(90deg, #7442BF 0%, #9C27B0 100%)',
-                        borderRadius: 4
-                      }
-                    }}
-                  />
-                </Box>
-
-                {/* Contact Information */}
-                <Box sx={{ mb: 4 }}>
-                  <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 600 }}>
-                    Contact Information
-                  </Typography>
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                      <Person sx={{ color: '#7442BF', fontSize: 20 }} />
-                      <Typography variant="body2">{userData.name}</Typography>
-                    </Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                      <Email sx={{ color: '#7442BF', fontSize: 20 }} />
-                      <Typography variant="body2">{userData.email}</Typography>
-                    </Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                      <Phone sx={{ color: '#7442BF', fontSize: 20 }} />
-                      <Typography variant="body2">{userData.phoneNumber}</Typography>
-                    </Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                      <Business sx={{ color: '#7442BF', fontSize: 20 }} />
-                      <Typography variant="body2">{userData.companyName}</Typography>
-                    </Box>
-                  </Box>
-                </Box>
-
-                {/* Goals */}
-                <Box sx={{ mb: 4 }}>
-                  <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 600 }}>
-                    Goals
-                  </Typography>
-                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                    {userData.goals.map((goal, index) => (
-                      <Chip
-                        key={goal}
-                        label={goal}
-                        size="small"
-                        sx={{ 
-                          bgcolor: `hsl(${250 + index * 20}, 70%, 95%)`,
-                          color: `hsl(${250 + index * 20}, 70%, 40%)`,
-                          fontWeight: 500
-                        }}
-                      />
-                    ))}
-                  </Box>
-                </Box>
-
-                {/* Interests */}
-                <Box>
-                  <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 600 }}>
-                    Interests
-                  </Typography>
-                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                    {userData.interests.map((interest, index) => (
-                      <Chip
-                        key={interest}
-                        label={interest}
-                        size="small"
-                        sx={{ 
-                          bgcolor: `hsl(${300 + index * 25}, 60%, 95%)`,
-                          color: `hsl(${300 + index * 25}, 60%, 40%)`,
-                          fontWeight: 500
-                        }}
-                      />
-                    ))}
-                  </Box>
-                </Box>
-              </CardContent>
-            </Card>
-          </Box>
-        </Box>
-      </Container>
+      {/* Floating Action Button (alternative quick action) */}
+      <Fab
+        color="primary"
+        aria-label="new request"
+        onClick={handleNewRequest}
+        sx={{
+          position: 'fixed',
+          bottom: 24,
+          right: 24,
+          background: 'linear-gradient(135deg, #7442BF 0%, #9C27B0 100%)',
+          boxShadow: '0 6px 20px rgba(116, 66, 191, 0.4)',
+          '&:hover': { 
+            background: 'linear-gradient(135deg, #5e3399 0%, #7b1fa2 100%)',
+            transform: 'scale(1.1)',
+            boxShadow: '0 8px 25px rgba(116, 66, 191, 0.5)'
+          },
+          transition: 'all 0.2s ease',
+          zIndex: 1000
+        }}
+      >
+        <AddIcon />
+      </Fab>
     </Box>
   );
 };
