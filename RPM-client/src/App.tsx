@@ -6,13 +6,14 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { RequestProvider } from './contexts/RequestContext';
 import Register from './screens/auth/register/Register';
 import Login from './screens/auth/login/Login';
-import Dashboard from './screens/dashboard/Dashboard';
 import SalesmanDashboard from './screens/dashboard/SalesmanDashboard';
 import ContactSalesman from './screens/contactSalesman/ContactSalesman';
 import BusinessInsights from './screens/businessInsights/BusinessInsights';
 import PersonalizedProducts from './screens/personalizedProducts/PersonalizedProducts';
 import Billing from './screens/billing/Billing';
 import RequestReview from './screens/requestReview/RequestReview';
+import PostListView from './screens/posts/PostListView';
+import PostDetailPage from './screens/posts/PostDetailPage';
 import MainLayout from './screens/layout/MainLayout';
 import SalesmanLayout from './screens/layout/SalesmanLayout';
 import ChatScreen from './screens/chat/ChatScreen';
@@ -75,14 +76,33 @@ function App() {
                   </ProtectedRoute>
                 } 
               />
+              
+              {/* Post Routes */}
               <Route 
-                path="/dashboard" 
+                path="/posts/:id" 
                 element={
                   <ProtectedRoute allowedUserTypes={['test']}>
-                    <ChatLayout><Dashboard /></ChatLayout>
+                    <ChatLayout><PostDetailPage /></ChatLayout>
                   </ProtectedRoute>
                 } 
               />
+              
+              {/* Post Status Views - Single parameterized route */}
+              <Route 
+                path="/posts/status/:status" 
+                element={
+                  <ProtectedRoute allowedUserTypes={['test']}>
+                    <ChatLayout><PostListView /></ChatLayout>
+                  </ProtectedRoute>
+                } 
+              />
+              
+              {/* Legacy support - redirect old routes to new parameterized route */}
+              <Route path="/posts/draft" element={<Navigate to="/posts/status/draft" replace />} />
+              <Route path="/posts/sent" element={<Navigate to="/posts/status/sent" replace />} />
+              <Route path="/posts/ongoing" element={<Navigate to="/posts/status/ongoing" replace />} />
+              <Route path="/posts/completed" element={<Navigate to="/posts/status/completed" replace />} />
+              
               <Route 
                 path="/contact-salesman" 
                 element={

@@ -22,13 +22,19 @@ import {
   Pagination,
   IconButton,
   InputAdornment,
-  Stack
+  Stack,
+  Card,
+  CardContent
 } from '@mui/material';
 import { 
   Receipt as ReceiptIcon,
   Download as DownloadIcon,
   Search as SearchIcon,
-  Description as InvoiceIcon
+  Description as InvoiceIcon,
+  Assignment,
+  AccountBalance,
+  Payment,
+  Receipt
 } from '@mui/icons-material';
 
 interface Payment {
@@ -47,7 +53,15 @@ interface Invoice {
   date: string;
   request: string;
   amount: number;
+  status: 'PAID' | 'UNPAID' | 'OVERDUE' | 'REFUNDED';
   invoiceUrl: string;
+}
+
+interface FinancialSummary {
+  activeRequests: number;
+  fundsEscrow: number;
+  totalPaid: number;
+  pendingInvoices: number;
 }
 
 // Mock data service
@@ -170,6 +184,7 @@ const mockInvoices: Invoice[] = mockPayments
     date: payment.date,
     request: payment.request,
     amount: payment.amount,
+    status: index % 4 === 0 ? 'UNPAID' : index % 4 === 1 ? 'OVERDUE' : index % 4 === 2 ? 'REFUNDED' : 'PAID',
     invoiceUrl: payment.invoiceUrl!
   }));
 
@@ -185,6 +200,7 @@ const Billing: React.FC = () => {
   // Filter states
   const [searchKeyword, setSearchKeyword] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
+  const [invoiceStatusFilter, setInvoiceStatusFilter] = useState<string>('ALL');
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
   
@@ -237,6 +253,11 @@ const Billing: React.FC = () => {
       );
     }
 
+    // Status filter
+    if (invoiceStatusFilter !== 'ALL') {
+      filtered = filtered.filter(invoice => invoice.status === invoiceStatusFilter);
+    }
+
     // Date range filter
     if (startDate) {
       filtered = filtered.filter(invoice => new Date(invoice.date) >= startDate);
@@ -247,10 +268,31 @@ const Billing: React.FC = () => {
 
     setFilteredInvoices(filtered);
     setInvoicePage(1); // Reset to first page when filters change
-  }, [invoices, searchKeyword, startDate, endDate]);
+  }, [invoices, searchKeyword, invoiceStatusFilter, startDate, endDate]);
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setCurrentTab(newValue);
+  };
+
+  // Calculate financial summary from payment data
+  const calculateFinancialSummary = (payments: Payment[]): FinancialSummary => {
+    const fundsEscrow = payments
+      .filter(p => p.status === 'FUNDS_HELD')
+      .reduce((sum, p) => sum + p.amount, 0);
+    
+    const totalPaid = payments
+      .filter(p => p.status === 'RELEASED')
+      .reduce((sum, p) => sum + p.amount, 0);
+    
+    const activeRequests = payments.filter(p => p.status === 'FUNDS_HELD').length;
+    const pendingInvoices = payments.filter(p => p.status === 'FUNDS_HELD').length;
+    
+    return {
+      activeRequests,
+      fundsEscrow,
+      totalPaid,
+      pendingInvoices
+    };
   };
 
   const formatCurrency = (amount: number) => {
@@ -259,7 +301,11 @@ const Billing: React.FC = () => {
       currency: 'USD',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
-    }).format(Math.abs(amount));
+    }).format(amount);
+  };
+
+  const formatValue = (value: number, format: 'number' | 'currency') => {
+    return format === 'currency' ? formatCurrency(value) : value.toString();
   };
 
   const formatDate = (dateString: string) => {
@@ -296,6 +342,36 @@ const Billing: React.FC = () => {
     }
   };
 
+  const getInvoiceStatusColor = (status: string) => {
+    switch (status) {
+      case 'PAID':
+        return 'success';
+      case 'UNPAID':
+        return 'warning';
+      case 'OVERDUE':
+        return 'error';
+      case 'REFUNDED':
+        return 'info';
+      default:
+        return 'default';
+    }
+  };
+
+  const getInvoiceStatusLabel = (status: string) => {
+    switch (status) {
+      case 'PAID':
+        return 'Paid';
+      case 'UNPAID':
+        return 'Unpaid';
+      case 'OVERDUE':
+        return 'Overdue';
+      case 'REFUNDED':
+        return 'Refunded';
+      default:
+        return status;
+    }
+  };
+
   const handleDownload = (url: string) => {
     // In a real app, this would trigger a download
     window.open(url, '_blank');
@@ -304,6 +380,7 @@ const Billing: React.FC = () => {
   const clearFilters = () => {
     setSearchKeyword('');
     setStatusFilter('ALL');
+    setInvoiceStatusFilter('ALL');
     setStartDate(null);
     setEndDate(null);
   };
@@ -364,6 +441,61 @@ const Billing: React.FC = () => {
         </Typography>
       </Paper>
 
+      {/* Financial Summary Cards */}
+      <Box sx={{ 
+        display: 'grid',
+        gridTemplateColumns: { xs: 'repeat(1, 1fr)', md: 'repeat(2, 1fr)' },
+        gap: 3,
+        mb: 4
+      }}>
+        {(() => {
+          const summary = calculateFinancialSummary(payments);
+          const statsCards = [
+            {
+              title: 'Funds in Escrow',
+              value: summary.fundsEscrow,
+              icon: AccountBalance,
+              color: '#FF9800',
+              format: 'currency' as const
+            },
+            {
+              title: 'Total Paid',
+              value: summary.totalPaid,
+              icon: Payment,
+              color: '#4CAF50',
+              format: 'currency' as const
+            }
+          ];
+
+          return statsCards.map((stat, index) => (
+            <Card key={index} sx={{ 
+              height: '100%',
+              background: `linear-gradient(135deg, ${stat.color}15 0%, ${stat.color}05 100%)`,
+              border: `1px solid ${stat.color}20`,
+              borderRadius: 3,
+              transition: 'all 0.3s ease',
+              '&:hover': {
+                transform: 'translateY(-4px)',
+                boxShadow: `0 8px 25px ${stat.color}25`,
+                border: `1px solid ${stat.color}40`,
+              }
+            }}>
+              <CardContent sx={{ p: 3 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+                  <stat.icon sx={{ fontSize: 32, color: stat.color }} />
+                  <Typography variant="h4" sx={{ fontWeight: 700, color: stat.color }}>
+                    {formatValue(stat.value, stat.format)}
+                  </Typography>
+                </Box>
+                <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
+                  {stat.title}
+                </Typography>
+              </CardContent>
+            </Card>
+          ));
+        })()}
+      </Box>
+
       <Paper sx={{ mb: 3 }}>
         <Tabs 
           value={currentTab} 
@@ -414,6 +546,23 @@ const Billing: React.FC = () => {
                   <MenuItem value="ALL">All Statuses</MenuItem>
                   <MenuItem value="RELEASED">Released</MenuItem>
                   <MenuItem value="FUNDS_HELD">Funds Held</MenuItem>
+                  <MenuItem value="REFUNDED">Refunded</MenuItem>
+                </Select>
+              </FormControl>
+            )}
+
+            {currentTab === 1 && (
+              <FormControl sx={{ minWidth: 150 }}>
+                <InputLabel>Status</InputLabel>
+                <Select
+                  value={invoiceStatusFilter}
+                  label="Status"
+                  onChange={(e) => setInvoiceStatusFilter(e.target.value)}
+                >
+                  <MenuItem value="ALL">All Statuses</MenuItem>
+                  <MenuItem value="PAID">Paid</MenuItem>
+                  <MenuItem value="UNPAID">Unpaid</MenuItem>
+                  <MenuItem value="OVERDUE">Overdue</MenuItem>
                   <MenuItem value="REFUNDED">Refunded</MenuItem>
                 </Select>
               </FormControl>
@@ -550,6 +699,7 @@ const Billing: React.FC = () => {
                       <TableCell sx={{ fontWeight: 600 }}>Date</TableCell>
                       <TableCell sx={{ fontWeight: 600 }}>Request Name</TableCell>
                       <TableCell sx={{ fontWeight: 600 }}>Amount</TableCell>
+                      <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
                       <TableCell sx={{ fontWeight: 600 }}>Download</TableCell>
                     </TableRow>
                   </TableHead>
@@ -564,6 +714,13 @@ const Billing: React.FC = () => {
                         <TableCell>{formatDate(invoice.date)}</TableCell>
                         <TableCell>{invoice.request}</TableCell>
                         <TableCell>{formatCurrency(invoice.amount)}</TableCell>
+                        <TableCell>
+                          <Chip 
+                            label={getInvoiceStatusLabel(invoice.status)}
+                            color={getInvoiceStatusColor(invoice.status) as any}
+                            size="small"
+                          />
+                        </TableCell>
                         <TableCell>
                           <IconButton
                             color="primary"

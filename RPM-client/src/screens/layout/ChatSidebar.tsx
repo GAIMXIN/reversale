@@ -21,8 +21,12 @@ import ReceiptIcon from '@mui/icons-material/Receipt';
 import MenuIcon from '@mui/icons-material/Menu';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import AddIcon from '@mui/icons-material/Add';
-import ChatIcon from '@mui/icons-material/Chat';
+import DraftsOutlinedIcon from '@mui/icons-material/DraftsOutlined';
+import SendOutlinedIcon from '@mui/icons-material/SendOutlined';
+import PendingActionsOutlinedIcon from '@mui/icons-material/PendingActionsOutlined';
+import CheckCircleOutlinedIcon from '@mui/icons-material/CheckCircleOutlined';
 import { useAuth } from '../../contexts/AuthContext';
+import { useRequest } from '../../contexts/RequestContext';
 
 interface ChatSidebarProps {
   width: number;
@@ -31,18 +35,19 @@ interface ChatSidebarProps {
   maxWidth?: number;
 }
 
-interface ChatHistory {
-  id: string;
-  title: string;
-  lastMessage: string;
-  timestamp: Date;
-}
+// Post status navigation items
+const postStatusItems = [
+  { to: "/posts/status/draft", text: "Drafts", icon: <DraftsOutlinedIcon />, status: ['draft'] },
+  { to: "/posts/status/sent", text: "Sent", icon: <SendOutlinedIcon />, status: ['confirmed', 'sent'] },
+  { to: "/posts/status/ongoing", text: "Ongoing", icon: <PendingActionsOutlinedIcon />, status: ['processing'] },
+  { to: "/posts/status/completed", text: "Completed", icon: <CheckCircleOutlinedIcon />, status: ['completed'] },
+];
 
-const menuItems = [
-  { to: "/dashboard", text: "Dashboard", icon: <DashboardIcon /> },
-  { to: "/markets", text: "Markets", icon: <StorefrontIcon /> },
+// System navigation items
+const systemMenuItems = [
+  { to: "/markets", text: "Marketplace", icon: <StorefrontIcon /> },
   { to: "/billing", text: "Billing & Invoices", icon: <ReceiptIcon /> },
-  { to: "/support", text: "Support", icon: <SupportAgentIcon /> },
+  { to: "/support", text: "Contact Salesman", icon: <SupportAgentIcon /> },
 ];
 
 export default function ChatSidebar({ 
@@ -54,36 +59,11 @@ export default function ChatSidebar({
   const location = useLocation();
   const navigate = useNavigate();
   const { isAuthenticated, user } = useAuth();
-  const [chatHistory, setChatHistory] = useState<ChatHistory[]>([]);
+  const { requestHistory } = useRequest();
   const [isResizing, setIsResizing] = useState(false);
 
   // Determine if sidebar is in collapsed state based on width
   const isCollapsed = width <= 120;
-
-  // 模拟聊天历史数据
-  useEffect(() => {
-    const mockChatHistory: ChatHistory[] = [
-      {
-        id: '1',
-        title: 'E-commerce Strategy',
-        lastMessage: 'Based on your e-commerce business...',
-        timestamp: new Date(Date.now() - 1000 * 60 * 30), // 30分钟前
-      },
-      {
-        id: '2',
-        title: 'Restaurant Operations',
-        lastMessage: 'I see you\'re in the food service...',
-        timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2), // 2小时前
-      },
-      {
-        id: '3',
-        title: 'Tech Startup Advice',
-        lastMessage: 'For your tech business...',
-        timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24), // 1天前
-      },
-    ];
-    setChatHistory(mockChatHistory);
-  }, []);
 
   // Handle mouse events for resizing
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
@@ -140,34 +120,16 @@ export default function ChatSidebar({
   };
 
   const handleNewChat = () => {
-    // 清除当前聊天内容，开始新对话
+    // Navigate to new post creation
     navigate('/');
-    // 这里可以添加清除聊天状态的逻辑
   };
 
-  const handleChatSelect = (chatId: string) => {
-    // 加载选中的聊天记录
-    navigate(`/?chat=${chatId}`);
-    // 这里可以添加加载特定聊天记录的逻辑
+  // Calculate post counts for each status
+  const getPostCount = (statuses: string[]) => {
+    return requestHistory.filter(request => statuses.includes(request.status)).length;
   };
 
-  const formatTime = (date: Date) => {
-    const now = new Date();
-    const diff = now.getTime() - date.getTime();
-    const minutes = Math.floor(diff / (1000 * 60));
-    const hours = Math.floor(diff / (1000 * 60 * 60));
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-
-    if (minutes < 60) {
-      return `${minutes}m ago`;
-    } else if (hours < 24) {
-      return `${hours}h ago`;
-    } else {
-      return `${days}d ago`;
-    }
-  };
-
-  // 如果是salesman用户，不显示侧边栏
+  // If salesman user, don't show sidebar
   if (user?.userType === 'salesman') {
     return null;
   }
@@ -186,7 +148,7 @@ export default function ChatSidebar({
             backgroundColor: '#f5f5f5',
             transition: isResizing ? 'none' : 'width 0.2s ease',
             overflowX: 'hidden',
-            borderRight: 'none', // Remove default border
+            borderRight: 'none',
           },
         }}
       >
@@ -211,11 +173,11 @@ export default function ChatSidebar({
             </IconButton>
           </Box>
 
-          {/* New Request Button */}
+          {/* New Post Button */}
           {isAuthenticated && (
             <Box sx={{ p: 2 }}>
               <Tooltip 
-                title={isCollapsed ? "New Request" : ""} 
+                title={isCollapsed ? "New Post" : ""} 
                 placement="right"
                 arrow
               >
@@ -238,126 +200,155 @@ export default function ChatSidebar({
                     boxShadow: '0 2px 8px rgba(116, 66, 191, 0.3)',
                   }}
                 >
-                  {isCollapsed ? <AddIcon /> : "New Request"}
+                  {isCollapsed ? <AddIcon /> : "New Post"}
                 </Button>
               </Tooltip>
             </Box>
           )}
 
-          {/* Recent Chats */}
-          {isAuthenticated && !isCollapsed && (
-            <Box sx={{ px: 2, pb: 2 }}>
-              <Typography variant="subtitle2" sx={{ 
-                color: '#6c757d', 
-                mb: 1, 
-                px: 1,
-                fontSize: '0.75rem',
-                fontWeight: 600,
-                textTransform: 'uppercase',
-                letterSpacing: '0.5px'
-              }}>
-                Recent Chats
-              </Typography>
-              <List sx={{ py: 0 }}>
-                {chatHistory.slice(0, 3).map((chat) => (
-                  <ListItem key={chat.id} disablePadding>
-                    <ListItemButton
-                      onClick={() => handleChatSelect(chat.id)}
-                      sx={{
-                        borderRadius: 1,
-                        mb: 0.5,
-                        px: 2,
-                        py: 1,
-                        '&:hover': {
-                          backgroundColor: 'rgba(116, 66, 191, 0.05)',
-                        },
-                      }}
-                    >
-                      <ListItemIcon sx={{ minWidth: 32 }}>
-                        <ChatIcon sx={{ fontSize: 18, color: '#7442BF' }} />
-                      </ListItemIcon>
-                      <ListItemText
-                        primary={
-                          <Typography variant="body2" sx={{ 
-                            fontWeight: 500,
-                            fontSize: '0.85rem',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap'
-                          }}>
-                            {chat.title}
-                          </Typography>
-                        }
-                        secondary={
-                          <Typography variant="caption" sx={{ 
-                            color: '#6c757d',
-                            fontSize: '0.7rem'
-                          }}>
-                            {formatTime(chat.timestamp)}
-                          </Typography>
-                        }
-                      />
-                    </ListItemButton>
-                  </ListItem>
-                ))}
-              </List>
-            </Box>
-          )}
-
-          <Divider sx={{ mx: 2, mb: 2 }} />
-
-          {/* Navigation Menu */}
+          {/* Post Status Navigation */}
           {isAuthenticated && (
-            <List sx={{ pt: 1 }}>
-              {menuItems.map((item) => (
-                <ListItem key={item.text} disablePadding>
-                  <Tooltip 
-                    title={isCollapsed ? item.text : ''} 
-                    placement="right"
-                    arrow
-                  >
-                    <ListItemButton
-                      component={Link}
-                      to={item.to}
-                      selected={location.pathname === item.to}
-                      sx={{
-                        minHeight: 48,
-                        justifyContent: isCollapsed ? 'center' : 'initial',
-                        px: 2.5,
-                        '&.Mui-selected': {
-                          backgroundColor: 'rgba(116, 66, 191, 0.1)',
-                          '&:hover': {
-                            backgroundColor: 'rgba(116, 66, 191, 0.2)',
-                          },
-                        },
-                        '&:hover': {
-                          backgroundColor: 'rgba(116, 66, 191, 0.05)',
-                        },
-                      }}
+            <List sx={{ pt: 1, px: 2 }}>
+              {postStatusItems.map((item) => {
+                const count = getPostCount(item.status);
+                const isSelected = location.pathname === item.to || location.pathname.startsWith(item.to);
+                
+                return (
+                  <ListItem key={item.text} disablePadding sx={{ mb: 0.5 }}>
+                    <Tooltip 
+                      title={isCollapsed ? `${item.text} (${count})` : ''} 
+                      placement="right"
+                      arrow
                     >
-                      <ListItemIcon 
-                        sx={{ 
-                          minWidth: 0,
-                          mr: isCollapsed ? 0 : 3,
-                          justifyContent: 'center',
-                          color: location.pathname === item.to ? '#7442BF' : 'inherit'
+                      <ListItemButton
+                        component={Link}
+                        to={item.to}
+                        selected={isSelected}
+                        sx={{
+                          minHeight: 48,
+                          justifyContent: isCollapsed ? 'center' : 'initial',
+                          px: 2,
+                          borderRadius: 2,
+                          '&.Mui-selected': {
+                            backgroundColor: 'rgba(116, 66, 191, 0.1)',
+                            '&:hover': {
+                              backgroundColor: 'rgba(116, 66, 191, 0.2)',
+                            },
+                          },
+                          '&:hover': {
+                            backgroundColor: 'rgba(116, 66, 191, 0.05)',
+                          },
                         }}
                       >
-                        {item.icon}
-                      </ListItemIcon>
-                      {!isCollapsed && (
-                        <ListItemText 
-                          primary={item.text}
+                        <ListItemIcon 
                           sx={{ 
-                            opacity: isCollapsed ? 0 : 1,
-                            color: location.pathname === item.to ? '#7442BF' : 'inherit'
+                            minWidth: 0,
+                            mr: isCollapsed ? 0 : 3,
+                            justifyContent: 'center',
+                            color: isSelected ? '#7442BF' : 'inherit'
                           }}
-                        />
-                      )}
-                    </ListItemButton>
-                  </Tooltip>
-                </ListItem>
-              ))}
+                        >
+                          {item.icon}
+                        </ListItemIcon>
+                        {!isCollapsed && (
+                          <ListItemText 
+                            primary={
+                              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                <Typography sx={{ 
+                                  color: isSelected ? '#7442BF' : 'inherit',
+                                  fontWeight: isSelected ? 600 : 400
+                                }}>
+                                  {item.text}
+                                </Typography>
+                                {count > 0 && (
+                                  <Typography variant="caption" sx={{ 
+                                    bgcolor: isSelected ? '#7442BF' : '#6c757d',
+                                    color: 'white',
+                                    borderRadius: '12px',
+                                    px: 1,
+                                    py: 0.25,
+                                    fontSize: '0.7rem',
+                                    fontWeight: 600,
+                                    minWidth: '20px',
+                                    textAlign: 'center'
+                                  }}>
+                                    {count}
+                                  </Typography>
+                                )}
+                              </Box>
+                            }
+                          />
+                        )}
+                      </ListItemButton>
+                    </Tooltip>
+                  </ListItem>
+                );
+              })}
+            </List>
+          )}
+
+          <Divider sx={{ mx: 2, my: 3 }} />
+
+          {/* System Navigation Menu */}
+          {isAuthenticated && (
+            <List sx={{ pt: 1, px: 2 }}>
+              {systemMenuItems.map((item) => {
+                const isSelected = location.pathname === item.to;
+                
+                return (
+                  <ListItem key={item.text} disablePadding sx={{ mb: 0.5 }}>
+                    <Tooltip 
+                      title={isCollapsed ? item.text : ''} 
+                      placement="right"
+                      arrow
+                    >
+                      <ListItemButton
+                        component={Link}
+                        to={item.to}
+                        selected={isSelected}
+                        sx={{
+                          minHeight: 48,
+                          justifyContent: isCollapsed ? 'center' : 'initial',
+                          px: 2,
+                          borderRadius: 2,
+                          '&.Mui-selected': {
+                            backgroundColor: 'rgba(116, 66, 191, 0.1)',
+                            '&:hover': {
+                              backgroundColor: 'rgba(116, 66, 191, 0.2)',
+                            },
+                          },
+                          '&:hover': {
+                            backgroundColor: 'rgba(116, 66, 191, 0.05)',
+                          },
+                        }}
+                      >
+                        <ListItemIcon 
+                          sx={{ 
+                            minWidth: 0,
+                            mr: isCollapsed ? 0 : 3,
+                            justifyContent: 'center',
+                            color: isSelected ? '#7442BF' : 'inherit'
+                          }}
+                        >
+                          {item.icon}
+                        </ListItemIcon>
+                        {!isCollapsed && (
+                          <ListItemText 
+                            primary={
+                              <Typography sx={{ 
+                                color: isSelected ? '#7442BF' : 'inherit',
+                                fontWeight: isSelected ? 600 : 400
+                              }}>
+                                {item.text}
+                              </Typography>
+                            }
+                          />
+                        )}
+                      </ListItemButton>
+                    </Tooltip>
+                  </ListItem>
+                );
+              })}
             </List>
           )}
 
