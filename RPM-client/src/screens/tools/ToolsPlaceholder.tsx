@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Typography,
@@ -6,21 +7,26 @@ import {
   CardContent,
   Grid,
   Chip,
+  CardActionArea,
 } from '@mui/material';
 import {
-  Build as BuildIcon,
+  Email as EmailIcon,
   Code as CodeIcon,
   Analytics as AnalyticsIcon,
 } from '@mui/icons-material';
 
 const ToolsPlaceholder: React.FC = () => {
+  const navigate = useNavigate();
+
   const toolPlaceholders = [
     {
       id: 'tool-a',
-      name: 'Tool A',
-      description: 'Advanced utility module for enhanced productivity',
-      icon: <BuildIcon sx={{ fontSize: 48, color: '#7442BF' }} />,
-      status: 'Coming Soon',
+      name: 'Outreach Tool',
+      description: 'Powerful email outreach tool for bulk sending and customer relationship management',
+      icon: <EmailIcon sx={{ fontSize: 48, color: '#7442BF' }} />,
+      status: 'Available',
+      isActive: true,
+      path: '/sales/tools/outreach',
     },
     {
       id: 'tool-b',
@@ -28,6 +34,7 @@ const ToolsPlaceholder: React.FC = () => {
       description: 'Analytics and reporting tools for better insights',
       icon: <AnalyticsIcon sx={{ fontSize: 48, color: '#7442BF' }} />,
       status: 'Coming Soon',
+      isActive: false,
     },
     {
       id: 'tool-c',
@@ -35,8 +42,15 @@ const ToolsPlaceholder: React.FC = () => {
       description: 'Automation and workflow optimization suite',
       icon: <CodeIcon sx={{ fontSize: 48, color: '#7442BF' }} />,
       status: 'Coming Soon',
+      isActive: false,
     },
   ];
+
+  const handleToolClick = (tool: any) => {
+    if (tool.isActive && tool.path) {
+      navigate(tool.path);
+    }
+  };
 
   return (
     <Box>
@@ -66,57 +80,112 @@ const ToolsPlaceholder: React.FC = () => {
               display: 'flex',
               flexDirection: 'column',
               transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-              '&:hover': {
+              cursor: tool.isActive ? 'pointer' : 'default',
+              opacity: tool.isActive ? 1 : 0.7,
+              '&:hover': tool.isActive ? {
                 transform: 'translateY(-2px)',
                 boxShadow: '0 4px 16px rgba(0,0,0,0.15)',
-              },
+              } : {},
             }}
           >
-            <CardContent sx={{ p: 3, flex: 1, display: 'flex', flexDirection: 'column' }}>
-              {/* Icon */}
-              <Box sx={{ textAlign: 'center', mb: 2 }}>
-                {tool.icon}
-              </Box>
-
-              {/* Title */}
-              <Typography 
-                variant="h6" 
-                sx={{ 
-                  fontWeight: 600, 
-                  color: '#333', 
-                  mb: 1,
-                  textAlign: 'center'
-                }}
+            {tool.isActive ? (
+              <CardActionArea 
+                onClick={() => handleToolClick(tool)}
+                sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}
               >
-                {tool.name}
-              </Typography>
+                <CardContent sx={{ p: 3, flex: 1, display: 'flex', flexDirection: 'column' }}>
+                  {/* Icon */}
+                  <Box sx={{ textAlign: 'center', mb: 2 }}>
+                    {tool.icon}
+                  </Box>
 
-              {/* Description */}
-              <Typography 
-                variant="body2" 
-                sx={{ 
-                  color: 'text.secondary', 
-                  mb: 2,
-                  textAlign: 'center',
-                  flex: 1
-                }}
-              >
-                {tool.description}
-              </Typography>
+                  {/* Title */}
+                  <Typography 
+                    variant="h6" 
+                    sx={{ 
+                      fontWeight: 600, 
+                      color: '#333', 
+                      mb: 1,
+                      textAlign: 'center'
+                    }}
+                  >
+                    {tool.name}
+                  </Typography>
 
-              {/* Status Badge */}
-              <Box sx={{ textAlign: 'center', mt: 'auto' }}>
-                <Chip 
-                  label={tool.status}
-                  size="small"
+                  {/* Description */}
+                  <Typography 
+                    variant="body2" 
+                    sx={{ 
+                      color: 'text.secondary', 
+                      mb: 2,
+                      textAlign: 'center',
+                      flex: 1
+                    }}
+                  >
+                    {tool.description}
+                  </Typography>
+
+                  {/* Status Badge */}
+                  <Box sx={{ textAlign: 'center', mt: 'auto' }}>
+                    <Chip 
+                      label={tool.status}
+                      size="small"
+                      sx={{ 
+                        bgcolor: tool.isActive ? '#e8f5e8' : '#f3e5f5',
+                        color: tool.isActive ? '#2e7d32' : '#7442BF',
+                        fontWeight: 500,
+                      }}
+                    />
+                  </Box>
+                </CardContent>
+              </CardActionArea>
+            ) : (
+              <CardContent sx={{ p: 3, flex: 1, display: 'flex', flexDirection: 'column' }}>
+                {/* Icon */}
+                <Box sx={{ textAlign: 'center', mb: 2 }}>
+                  {tool.icon}
+                </Box>
+
+                {/* Title */}
+                <Typography 
+                  variant="h6" 
                   sx={{ 
-                    bgcolor: '#f3e5f5',
-                    color: '#7442BF',
-                    fontWeight: 500,
+                    fontWeight: 600, 
+                    color: '#333', 
+                    mb: 1,
+                    textAlign: 'center'
                   }}
-                />
-              </Box>
-            </CardContent>
+                >
+                  {tool.name}
+                </Typography>
+
+                {/* Description */}
+                <Typography 
+                  variant="body2" 
+                  sx={{ 
+                    color: 'text.secondary', 
+                    mb: 2,
+                    textAlign: 'center',
+                    flex: 1
+                  }}
+                >
+                  {tool.description}
+                </Typography>
+
+                {/* Status Badge */}
+                <Box sx={{ textAlign: 'center', mt: 'auto' }}>
+                  <Chip 
+                    label={tool.status}
+                    size="small"
+                    sx={{ 
+                      bgcolor: '#f3e5f5',
+                      color: '#7442BF',
+                      fontWeight: 500,
+                    }}
+                  />
+                </Box>
+              </CardContent>
+            )}
           </Card>
         ))}
       </Box>

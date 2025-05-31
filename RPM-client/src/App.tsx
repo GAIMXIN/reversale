@@ -8,15 +8,13 @@ import { useAuth } from './contexts/AuthContext';
 import Register from './screens/auth/register/Register';
 import Login from './screens/auth/login/Login';
 import BusinessInsights from './screens/businessInsights/BusinessInsights';
-import PersonalizedProducts from './screens/personalizedProducts/PersonalizedProducts';
 import Billing from './screens/billing/Billing';
-import RequestReview from './screens/requestReview/RequestReview';
-import PostListView from './screens/posts/PostListView';
-import PostDetailPage from './screens/posts/PostDetailPage';
 import Inbox from './screens/inbox/Inbox';
+import Drafts from './screens/drafts/Drafts';
 import ProfileSettings from './screens/profile/ProfileSettings';
 import MainLayout from './screens/layout/MainLayout';
 import ChatScreen from './screens/chat/ChatScreen';
+import ChatSalesman from './screens/chat/ChatSalesman';
 import ChatLayout from './screens/layout/ChatLayout';
 import SalesLayout from './components/SalesLayout';
 import SalesDashboard from './screens/sales/SalesDashboard';
@@ -28,6 +26,8 @@ import SalesSettings from './screens/sales/SalesSettings';
 import DraftEdit from './screens/sales/DraftEdit';
 import MassEmailSender from './screens/tools/MassEmailSender';
 import ToolsPlaceholder from './screens/tools/ToolsPlaceholder';
+import OutreachTool from './screens/tools/OutreachTool';
+import LeadsDealsChat from './screens/sales/LeadsDealsChat';
 import AdminLayout from './components/AdminLayout';
 import AdminDashboard from './screens/admin/AdminDashboard';
 import AdminSalesTeam from './screens/admin/AdminSalesTeam';
@@ -36,6 +36,7 @@ import AdminDeals from './screens/admin/AdminDeals';
 import AdminCommissions from './screens/admin/AdminCommissions';
 import AdminInbox from './screens/admin/AdminInbox';
 import AdminSettings from './screens/admin/AdminSettings';
+import AdminChat from './screens/admin/AdminChat';
 import './App.css';
 
 // Protected Chat Component for regular users
@@ -91,40 +92,16 @@ function App() {
               
               {/* Regular user routes */}
               <Route path="/" element={<ProtectedChat />} />
+              
+              {/* Chat with Salesman Route */}
               <Route 
-                path="/request-review/:id" 
+                path="/chat-salesman" 
                 element={
                   <ProtectedRoute allowedUserTypes={['test']}>
-                    <RequestReview />
+                    <ChatLayout><ChatSalesman /></ChatLayout>
                   </ProtectedRoute>
                 } 
               />
-              
-              {/* Post Routes */}
-              <Route 
-                path="/posts/:id" 
-                element={
-                  <ProtectedRoute allowedUserTypes={['test']}>
-                    <PostDetailPage />
-                  </ProtectedRoute>
-                } 
-              />
-              
-              {/* Post Status Views - Single parameterized route */}
-              <Route 
-                path="/posts/status/:status" 
-                element={
-                  <ProtectedRoute allowedUserTypes={['test']}>
-                    <ChatLayout><PostListView /></ChatLayout>
-                  </ProtectedRoute>
-                } 
-              />
-              
-              {/* Legacy support - redirect old routes to new parameterized route */}
-              <Route path="/posts/draft" element={<Navigate to="/posts/status/draft" replace />} />
-              <Route path="/posts/sent" element={<Navigate to="/posts/status/sent" replace />} />
-              <Route path="/posts/ongoing" element={<Navigate to="/posts/status/ongoing" replace />} />
-              <Route path="/posts/completed" element={<Navigate to="/posts/status/completed" replace />} />
               
               {/* Inbox Route */}
               <Route 
@@ -132,6 +109,16 @@ function App() {
                 element={
                   <ProtectedRoute allowedUserTypes={['test']}>
                     <ChatLayout><Inbox /></ChatLayout>
+                  </ProtectedRoute>
+                } 
+              />
+              
+              {/* Drafts Route */}
+              <Route 
+                path="/drafts" 
+                element={
+                  <ProtectedRoute allowedUserTypes={['test']}>
+                    <ChatLayout><Drafts /></ChatLayout>
                   </ProtectedRoute>
                 } 
               />
@@ -159,22 +146,6 @@ function App() {
                 element={
                   <ProtectedRoute allowedUserTypes={['test']}>
                     <ChatLayout><BusinessInsights /></ChatLayout>
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/personalized-products" 
-                element={
-                  <ProtectedRoute allowedUserTypes={['test']}>
-                    <ChatLayout><PersonalizedProducts /></ChatLayout>
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/markets" 
-                element={
-                  <ProtectedRoute allowedUserTypes={['test']}>
-                    <ChatLayout><PersonalizedProducts /></ChatLayout>
                   </ProtectedRoute>
                 } 
               />
@@ -260,6 +231,30 @@ function App() {
                   </ProtectedRoute>
                 } 
               />
+              <Route 
+                path="/sales/tools/outreach" 
+                element={
+                  <ProtectedRoute allowedUserTypes={['salesperson']}>
+                    <SalesLayout><OutreachTool /></SalesLayout>
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/sales/outreach/tool" 
+                element={
+                  <ProtectedRoute allowedUserTypes={['salesperson']}>
+                    <SalesLayout><OutreachTool /></SalesLayout>
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/sales/leads/deals-chat" 
+                element={
+                  <ProtectedRoute allowedUserTypes={['salesperson']}>
+                    <SalesLayout><LeadsDealsChat /></SalesLayout>
+                  </ProtectedRoute>
+                } 
+              />
               
               {/* Admin routes */}
               <Route 
@@ -315,6 +310,14 @@ function App() {
                 element={
                   <ProtectedRoute allowedUserTypes={['admin']}>
                     <AdminLayout><AdminSettings /></AdminLayout>
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/admin/chat" 
+                element={
+                  <ProtectedRoute allowedUserTypes={['admin']}>
+                    <AdminLayout><AdminChat /></AdminLayout>
                   </ProtectedRoute>
                 } 
               />

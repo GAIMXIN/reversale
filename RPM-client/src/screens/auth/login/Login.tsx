@@ -84,7 +84,7 @@ import {
           };
           login(fakeToken, salespersonUser);
           navigate('/sales/dashboard');
-        } else if (email === "admin@example.com" && password === "12345678") {
+        } else if (email === "admin@example.com" && password === "123456") {
           // admin用户登录
           const fakeToken = "fake-jwt-token-" + Math.random().toString(36).substring(7);
           const adminUser = {

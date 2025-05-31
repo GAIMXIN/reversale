@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { generateDocument } from '../services/openaiService';
 
 export interface RequestSummary {
   id: string;
@@ -223,58 +222,26 @@ export const RequestProvider: React.FC<RequestProviderProps> = ({ children }) =>
 
   // Mock API call to create summary
   const createRequestFromText = async (text: string): Promise<RequestSummary> => {
-    // Use OpenAI service to generate document
-    try {
-      const generatedDoc = await generateDocument({
-        userInput: text,
-        documentType: 'review_summary', // Can be made configurable
-        context: 'Business operations analysis and improvement recommendations'
-      });
+    // Generate summary using mock logic (no AI backend for now)
+    const requestId = Date.now().toString();
+    
+    const summary: RequestSummary = {
+      id: requestId,
+      title: generateTitle(text),
+      problem: generateProblem(text),
+      impact: generateImpact(text),
+      desiredOutcome: generateDesiredOutcome(text),
+      estPrice: generateEstPrice(text),
+      estETA: generateEstETA(text),
+      originalText: text,
+      createdAt: new Date(),
+      status: 'draft',
+      lastModified: new Date(),
+    };
 
-      const requestId = Date.now().toString();
-      
-      const summary: RequestSummary = {
-        id: requestId,
-        title: generatedDoc.title,
-        problem: generatedDoc.problem,
-        impact: generatedDoc.impact,
-        desiredOutcome: generatedDoc.desiredOutcome,
-        estPrice: generatedDoc.estPrice,
-        estETA: generatedDoc.estETA,
-        originalText: text,
-        createdAt: new Date(),
-        status: 'draft',
-        lastModified: new Date(),
-      };
-
-      setCurrentRequest(summary);
-      setRequestHistory(prev => [summary, ...prev]);
-      return summary;
-      
-    } catch (error) {
-      console.error('Error generating document:', error);
-      
-      // Fallback to mock generation
-      const requestId = Date.now().toString();
-      
-      const summary: RequestSummary = {
-        id: requestId,
-        title: generateTitle(text),
-        problem: generateProblem(text),
-        impact: generateImpact(text),
-        desiredOutcome: generateDesiredOutcome(text),
-        estPrice: generateEstPrice(text),
-        estETA: generateEstETA(text),
-        originalText: text,
-        createdAt: new Date(),
-        status: 'draft',
-        lastModified: new Date(),
-      };
-
-      setCurrentRequest(summary);
-      setRequestHistory(prev => [summary, ...prev]);
-      return summary;
-    }
+    setCurrentRequest(summary);
+    setRequestHistory(prev => [summary, ...prev]);
+    return summary;
   };
 
   const updateRequestStatus = (id: string, status: RequestSummary['status']) => {

@@ -25,6 +25,7 @@ import {
   Inbox as InboxIcon,
   Settings as SettingsIcon,
   Logout as LogoutIcon,
+  Chat as ChatIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
 import logo from '../assests/img/logo.png';
@@ -38,6 +39,7 @@ const adminSidebarItems = [
   { path: '/admin/sales-team', label: 'Sales Team', icon: <SalesTeamIcon /> },
   { path: '/admin/leads', label: 'Leads', icon: <LeadsIcon /> },
   { path: '/admin/deals', label: 'Deals', icon: <DealsIcon /> },
+  { path: '/admin/chat', label: 'Admin Chat', icon: <ChatIcon /> },
   { path: '/admin/inbox', label: 'Inbox', icon: <InboxIcon /> },
 ];
 

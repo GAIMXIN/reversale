@@ -29,6 +29,7 @@
     "openai": "^5.0.1",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
+    "react-qr-code": "^2.0.15",
     "react-router-dom": "^7.5.3",
     "react-scripts": "5.0.1",
     "sonner": "^2.0.3",

@@ -13,6 +13,14 @@ import {
   ListItemIcon,
   ListItemText,
   CircularProgress,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Divider,
+  Card,
+  CardContent,
+  Chip,
 } from "@mui/material";
 import { 
   Send as SendIcon, 
@@ -23,6 +31,9 @@ import {
   Folder as FolderIcon,
   CameraAlt as CameraIcon,
   Photo as PhotoIcon,
+  Edit as EditIcon,
+  Save as SaveIcon,
+  Close as CloseIcon,
 } from "@mui/icons-material";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -32,11 +43,182 @@ import logo from '../../assests/img/logo.png';
 interface Message {
   role: 'user' | 'assistant';
   content: string;
+  draft?: {
+    title: string;
+    content: string;
+    budget: string;
+    timeline: string;
+  };
+  product?: {
+    id: string;
+    name: string;
+    description: string;
+    category: string;
+    price: string;
+    timeline: string;
+    rating: number;
+    url: string;
+    features: string[];
+    company: string;
+  };
 }
 
 interface ChatScreenProps {
   isAuthenticated?: boolean;
 }
+
+// Simple Product Card Component for non-authenticated users
+const ProductCard = ({ product, onContactSales, onViewDetails }: { 
+  product: any, 
+  onContactSales: () => void, 
+  onViewDetails: () => void 
+}) => {
+  const getCategoryColor = (category: string) => {
+    switch (category.toLowerCase()) {
+      case 'e-commerce': return '#e91e63';
+      case 'crm': return '#2196f3';
+      case 'restaurant': return '#ff9800';
+      case 'medical': return '#4caf50';
+      default: return '#7442BF';
+    }
+  };
+
+  const renderStars = (rating: number) => {
+    return Array.from({ length: 5 }, (_, index) => (
+      <Typography
+        key={index}
+        component="span"
+        sx={{
+          fontSize: 16,
+          color: index < Math.floor(rating) ? '#ffc107' : '#e0e0e0'
+        }}
+      >
+        ★
+      </Typography>
+    ));
+  };
+
+  return (
+    <Card sx={{ 
+      maxWidth: 400,
+      mx: 'auto',
+      transition: 'all 0.3s ease',
+      '&:hover': {
+        transform: 'translateY(-4px)',
+        boxShadow: '0 8px 25px rgba(116, 66, 191, 0.15)',
+      }
+    }}>
+      <CardContent sx={{ p: 3 }}>
+        <Box sx={{ mb: 2 }}>
+          <Typography variant="h6" sx={{ 
+            fontWeight: 600, 
+            color: '#333',
+            mb: 1
+          }}>
+            {product.name}
+          </Typography>
+          
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+            <Chip
+              label={product.category}
+              size="small"
+              sx={{
+                bgcolor: getCategoryColor(product.category),
+                color: 'white',
+                fontSize: '0.75rem'
+              }}
+            />
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              {renderStars(product.rating)}
+              <Typography variant="caption" sx={{ color: '#666', ml: 0.5 }}>
+                ({product.rating})
+              </Typography>
+            </Box>
+          </Box>
+        </Box>
+
+        <Typography variant="body2" sx={{ 
+          color: '#666',
+          mb: 3,
+          lineHeight: 1.5
+        }}>
+          {product.description}
+        </Typography>
+
+        <Box sx={{ mb: 3 }}>
+          <Typography variant="caption" sx={{ color: '#7442BF', fontWeight: 600, mb: 1, display: 'block' }}>
+            Key Features:
+          </Typography>
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+            {product.features.slice(0, 3).map((feature: string, index: number) => (
+              <Chip
+                key={index}
+                label={feature}
+                size="small"
+                variant="outlined"
+                sx={{
+                  fontSize: '0.7rem',
+                  height: '24px',
+                  borderColor: '#7442BF',
+                  color: '#7442BF'
+                }}
+              />
+            ))}
+          </Box>
+        </Box>
+
+        <Box sx={{ 
+          display: 'flex', 
+          flexDirection: 'column', 
+          gap: 1.5, 
+          mb: 3,
+          p: 2,
+          bgcolor: 'rgba(116, 66, 191, 0.03)',
+          borderRadius: 2
+        }}>
+          <Typography variant="body2" sx={{ color: '#333', fontWeight: 500 }}>
+            <span style={{ color: '#7442BF', fontWeight: 600 }}>{product.price}</span>
+          </Typography>
+          <Typography variant="body2" sx={{ color: '#333', fontWeight: 500 }}>
+            Timeline: <span style={{ color: '#7442BF', fontWeight: 600 }}>{product.timeline}</span>
+          </Typography>
+          <Typography variant="body2" sx={{ color: '#999', fontWeight: 500 }}>
+            By {product.company}
+          </Typography>
+        </Box>
+
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+          <Button
+            variant="contained"
+            onClick={onContactSales}
+            sx={{
+              bgcolor: '#7442BF',
+              '&:hover': { bgcolor: '#5e3399' },
+              fontWeight: 600
+            }}
+          >
+            Contact Sales
+          </Button>
+          
+          <Button
+            variant="outlined"
+            onClick={onViewDetails}
+            sx={{
+              borderColor: '#7442BF',
+              color: '#7442BF',
+              '&:hover': {
+                borderColor: '#5e3399',
+                bgcolor: 'rgba(116, 66, 191, 0.05)'
+              }
+            }}
+          >
+            View Details
+          </Button>
+        </Box>
+      </CardContent>
+    </Card>
+  );
+};
 
 export default function ChatScreen({ isAuthenticated = false }: ChatScreenProps) {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -45,6 +227,8 @@ export default function ChatScreen({ isAuthenticated = false }: ChatScreenProps)
   const [showTextInput, setShowTextInput] = useState(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [isCreatingRequest, setIsCreatingRequest] = useState(false);
+  const [editingDraft, setEditingDraft] = useState<any>(null);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
   const navigate = useNavigate();
   const { createRequestFromText } = useRequest();
   
@@ -87,6 +271,172 @@ export default function ChatScreen({ isAuthenticated = false }: ChatScreenProps)
     setMessages(history);
   };
 
+  // 判断用户输入是否表达产品需求
+  const isProductRequest = (userInput: string): boolean => {
+    const lowerInput = userInput.toLowerCase();
+    
+    // 产品需求关键词
+    const productKeywords = [
+      'i want a platform', 'i want a system', 'i need a platform', 'i need a system',
+      'build a platform', 'create a platform', 'develop a system', 'make a system',
+      'looking for a solution', 'searching for a tool', 'need a tool', 'want a solution',
+      'recommend a platform', 'suggest a system', 'find me a', 'show me platforms',
+      'what platform', 'which system', 'best platform', 'good system',
+      'platform for', 'system for', 'software for', 'tool for'
+    ];
+    
+    return productKeywords.some(keyword => lowerInput.includes(keyword));
+  };
+
+  const generateDraft = (userInput: string) => {
+    const lowerInput = userInput.toLowerCase();
+    
+    if (lowerInput.includes('ecommerce') || lowerInput.includes('e-commerce') || lowerInput.includes('online store') || lowerInput.includes('selling online')) {
+      return {
+        title: "E-commerce Business Optimization Project",
+        content: `**Business Challenge:**
+${userInput}
+
+**Identified Pain Points:**
+• High customer acquisition costs reducing profitability
+• Cart abandonment rates above industry average (70%+)
+• Inventory management inefficiencies causing stock-outs
+• Mobile conversion rates significantly lower than desktop
+• Competition from major platforms affecting margins
+
+**Proposed Solutions:**
+• Implement advanced cart recovery system with personalized emails
+• Optimize mobile checkout process and page load speeds
+• Set up intelligent inventory management with automated reordering
+• Develop targeted customer acquisition campaigns with lower CPM
+• Create competitive analysis and pricing strategy optimization
+
+**Expected Outcomes:**
+• 25-40% reduction in cart abandonment rates
+• 30-50% improvement in customer acquisition efficiency
+• 20-35% increase in overall conversion rates
+• Streamlined inventory management reducing stock-outs by 80%
+
+**Implementation Approach:**
+1. Conduct comprehensive website audit and performance analysis
+2. Implement technical optimizations for mobile experience
+3. Set up advanced analytics and conversion tracking
+4. Deploy cart recovery and email marketing automation
+5. Optimize inventory management systems and processes`,
+        budget: "$15,000 - $25,000",
+        timeline: "6-8 weeks"
+      };
+    } else if (lowerInput.includes('restaurant') || lowerInput.includes('food') || lowerInput.includes('cafe') || lowerInput.includes('dining')) {
+      return {
+        title: "Restaurant Operations Optimization Project",
+        content: `**Business Challenge:**
+${userInput}
+
+**Identified Pain Points:**
+• High staff turnover rates affecting service quality
+• Food waste and inventory management inefficiencies
+• Limited online ordering and delivery capabilities
+• Inconsistent customer experience and satisfaction
+• Difficulty managing peak hour operations
+
+**Proposed Solutions:**
+• Implement comprehensive staff training and retention program
+• Deploy smart inventory management system with waste tracking
+• Set up integrated online ordering and delivery platform
+• Create standardized service protocols and quality systems
+• Optimize kitchen workflow and order management processes
+
+**Expected Outcomes:**
+• 40-60% reduction in staff turnover rates
+• 25-35% decrease in food waste and inventory costs
+• 30-50% increase in online order volume
+• Improved customer satisfaction scores by 20-30%
+• Enhanced operational efficiency during peak hours
+
+**Implementation Approach:**
+1. Assess current operations and identify optimization opportunities
+2. Implement staff training programs and retention strategies
+3. Deploy technology solutions for inventory and order management
+4. Establish quality control and customer service standards
+5. Monitor performance and continuously optimize processes`,
+        budget: "$12,000 - $20,000",
+        timeline: "4-6 weeks"
+      };
+    } else if (lowerInput.includes('medical') || lowerInput.includes('doctor') || lowerInput.includes('healthcare') || lowerInput.includes('clinic') || lowerInput.includes('soap') || lowerInput.includes('patient') || lowerInput.includes('physician') || lowerInput.includes('hospital')) {
+      return {
+        title: "Medical Practice Digital Transformation Project",
+        content: `**Business Challenge:**
+${userInput}
+
+**Identified Pain Points:**
+• Excessive time spent on documentation outside patient care
+• Administrative burden leading to physician burnout
+• Work-life balance severely impacted by evening documentation
+• EHR systems reducing face-to-face patient interaction time
+• Inefficient workflow processes affecting productivity
+
+**Proposed Solutions:**
+• Deploy NuroScript ambient dictation technology for automatic SOAP note generation
+• Implement streamlined EHR integration and workflow optimization
+• Set up voice-activated documentation system requiring no manual typing
+• Create efficient patient data management and retrieval systems
+• Establish automated billing and administrative process workflows
+
+**Expected Outcomes:**
+• 60-70% reduction in documentation time
+• 2-3 hours saved daily - eliminate taking work home
+• Improved work-life balance for healthcare providers
+• Enhanced patient interaction with more eye contact and engagement
+• Reduced physician burnout and stress levels
+
+**Implementation Approach:**
+1. Assess current documentation workflow and time allocation
+2. Install and configure NuroScript ambient dictation system
+3. Integrate with existing EHR systems and train staff
+4. Implement workflow optimization and process improvements
+5. Monitor performance and continuously refine the system`,
+        budget: "$20,000 - $35,000",
+        timeline: "3-4 weeks"
+      };
+    } else {
+      return {
+        title: "Business Operations Optimization Project",
+        content: `**Business Challenge:**
+${userInput}
+
+**Identified Pain Points:**
+• Operational inefficiencies affecting productivity and profitability
+• Manual processes that could be automated for better efficiency
+• Lack of integrated systems for streamlined operations
+• Customer service and satisfaction improvement opportunities
+• Growth planning and strategic development needs
+
+**Proposed Solutions:**
+• Conduct comprehensive business process analysis and optimization
+• Implement automation tools for repetitive tasks and workflows
+• Integrate systems for better data flow and decision making
+• Develop customer service enhancement strategies
+• Create growth planning and strategic development roadmap
+
+**Expected Outcomes:**
+• 30-50% improvement in operational efficiency
+• Significant time savings through process automation
+• Better decision making through integrated data systems
+• Enhanced customer satisfaction and retention
+• Clear roadmap for sustainable business growth
+
+**Implementation Approach:**
+1. Analyze current business processes and identify optimization opportunities
+2. Implement automation tools and integrated systems
+3. Train staff on new processes and technologies
+4. Establish performance monitoring and continuous improvement
+5. Develop long-term strategic growth plan`,
+        budget: "$10,000 - $18,000",
+        timeline: "4-6 weeks"
+      };
+    }
+  };
+
   const handleSend = async () => {
     if (!input.trim()) return;
 
@@ -96,145 +446,414 @@ export default function ChatScreen({ isAuthenticated = false }: ChatScreenProps)
     const originalInput = input;
     setInput("");
 
-    if (isAuthenticated) {
-      // For authenticated users, create request summary and navigate to review page
-      setIsCreatingRequest(true);
-      
-      try {
-        const requestSummary = await createRequestFromText(originalInput);
-        navigate(`/request-review/${requestSummary.id}`);
-      } catch (error) {
-        console.error('Error creating request:', error);
-        setIsCreatingRequest(false);
-        
-        // Fallback to chat response if request creation fails
+    // 检查是否为产品需求，如果是则跳转到产品推荐页面
+    if (isProductRequest(originalInput)) {
+      // 对于未登录用户，直接显示产品推荐卡片
+      if (!isAuthenticated) {
         setTimeout(() => {
-          const aiResponse: Message = { 
+          const aiResponse = `I found a great platform solution for you. Here's a recommendation based on your request: "${originalInput}"`;
+
+          const aiMessage: Message = { 
             role: 'assistant', 
-            content: "I apologize, but I'm having trouble processing your request right now. Please try again in a moment." 
+            content: aiResponse,
+            product: {
+              id: '1',
+              name: 'E-commerce Platform Pro',
+              description: 'Complete e-commerce solution with advanced features including inventory management, payment processing, and analytics dashboard.',
+              category: 'E-commerce',
+              price: '$15,000 - $25,000',
+              timeline: '8-12 weeks',
+              rating: 4.8,
+              url: 'https://demo.ecommerce-pro.com',
+              features: ['Payment Integration', 'Inventory Management', 'Analytics', 'Mobile Responsive'],
+              company: 'TechSolutions Inc.',
+            }
           };
-          setMessages(prev => [...prev, aiResponse]);
+          
+          setMessages(prev => [...prev, aiMessage]);
         }, 1000);
+        return;
       }
+
+      // 对于已登录用户，显示AI响应并跳转到drafts页面
+      setTimeout(() => {
+        const aiResponse = `I understand you're looking for a platform solution. Let me show you some product recommendations that might fit your needs.
+
+Based on your request: "${originalInput}"
+
+I'll redirect you to our product recommendations page where you can:
+• Browse suitable platform solutions
+• View detailed product features and pricing
+• Access demo links and QR codes
+• Connect directly with our specialists
+
+Redirecting you now...`;
+
+        const aiMessage: Message = { 
+            role: 'assistant', 
+          content: aiResponse
+        };
+        
+        setMessages(prev => [...prev, aiMessage]);
+        
+        // 跳转到产品推荐页面，传递用户查询
+        setTimeout(() => {
+          navigate('/drafts?tab=products', { 
+            state: { 
+              query: originalInput 
+            } 
+          });
+        }, 2000);
+      }, 1000);
       return;
     }
 
-    // For non-authenticated users, continue with existing chat flow
+    // For authenticated users - generate editable draft like non-authenticated users
+    if (isAuthenticated) {
+      setIsCreatingRequest(true);
+      
     setTimeout(() => {
+        const draft = generateDraft(originalInput);
+        
       let aiResponse = "";
       
       if (userInput.includes('ecommerce') || userInput.includes('e-commerce') || userInput.includes('online store') || userInput.includes('selling online')) {
-        aiResponse = `Based on your e-commerce business, I've identified several key pain points:
+          aiResponse = `🚀 **Advanced E-commerce Business Analysis:**
 
-🎯 **Main Pain Points:**
-• Customer acquisition costs are rising
-• Cart abandonment rates (average 70%)
-• Inventory management complexity
-• Competition from larger platforms
+Based on your e-commerce business, here's my comprehensive analysis:
 
-💡 **Potential Clients I Can Connect You With:**
-• **Sarah Chen** - Digital Marketing Specialist (can help reduce acquisition costs)
-• **Mike Rodriguez** - UX/UI Designer (specializes in checkout optimization)
-• **Lisa Wang** - Inventory Management Consultant
-• **David Kim** - E-commerce Growth Strategist
+🎯 **Detailed Pain Point Analysis:**
+• Customer acquisition costs have increased by 38% year-over-year
+• Cart abandonment rate averaging 69.8% (industry benchmark: 70%)
+• Inventory management inefficiencies causing 15% stock-outs
+• Competition from Amazon and other platforms reducing margins by 12%
+• Mobile conversion rates 2.3x lower than desktop
 
-🔐 **Want to connect with these professionals?**
-Please **login** to access their contact information, portfolios, and schedule consultations. Our verified network of experts is ready to help you solve these challenges!
+💡 **Verified Specialists Available:**
+• **Sarah Chen** - E-commerce Growth Specialist (increased client revenue by 245%)
+• **Mike Rodriguez** - UX/UI Designer (reduced cart abandonment by 40%)
+• **Lisa Wang** - Inventory Management Expert (saved clients $50K+ annually)
+• **David Kim** - Digital Marketing Strategist (cut acquisition costs by 35%)
+• **Emma Thompson** - Mobile Optimization Specialist
 
-Would you like me to provide more specific advice about your e-commerce challenges?`;
-      } else if (userInput.includes('restaurant') || userInput.includes('food') || userInput.includes('cafe') || userInput.includes('dining')) {
-        aiResponse = `I see you're in the food service industry. Here are the common pain points I've identified:
+📊 **Market Intelligence:**
+• Your industry segment is growing 23% annually
+• Top performing product categories in your niche
+• Competitor analysis and pricing strategies
+• Emerging market opportunities
 
-🎯 **Main Pain Points:**
-• Staff retention and training costs
-• Food waste and inventory spoilage
-• Online ordering and delivery management
-• Customer review management
+✅ **Editable Draft Created:**
+I've generated a comprehensive business analysis draft that you can now edit and customize. This includes detailed recommendations, budget estimates, and timeline projections.
 
-💡 **Potential Clients I Can Connect You With:**
-• **Emma Thompson** - Restaurant Operations Consultant
-• **Carlos Martinez** - Food Waste Reduction Specialist
-• **Jennifer Liu** - Digital Ordering Systems Expert
-• **Alex Johnson** - Staff Training and Retention Advisor
+🎯 **Next Steps:**
+Review and edit your personalized business plan, then send it to verified specialists for detailed proposals.`;
+        } else if (userInput.includes('medical') || userInput.includes('doctor') || userInput.includes('healthcare') || userInput.includes('clinic') || userInput.includes('soap') || userInput.includes('patient') || userInput.includes('physician') || userInput.includes('hospital')) {
+          aiResponse = `🏥 **Comprehensive Healthcare Practice Analysis:**
 
-🔐 **Ready to get their contact details?**
-**Login** to access their profiles, case studies, and book consultations. These professionals have helped similar businesses increase efficiency by 30-40%!
+**Advanced Medical Practice Optimization:**
 
-Which area would you like to focus on first?`;
-      } else if (userInput.includes('medical') || userInput.includes('doctor') || userInput.includes('healthcare') || userInput.includes('clinic') || userInput.includes('soap') || userInput.includes('patient') || userInput.includes('physician') || userInput.includes('hospital')) {
-        aiResponse = `🏥 **Healthcare Practice Analysis:**
+🎯 **Detailed Healthcare Pain Points:**
+• Physicians spend 2-3 hours daily on documentation outside patient care
+• SOAP notes and medical records consume 35-40% of a doctor's time
+• Administrative burden leads to physician burnout (affecting 50% of doctors)
+• Work-life balance severely impacted by after-hours documentation
+• EHR systems causing 23% productivity decrease
 
-I understand the challenges in medical practice! A doctor's wife recently told us: *"My husband always comes home late and brings his work of writing SOAP notes to home to work during evenings."*
+💡 **Premium Healthcare Solutions:**
+• **Dr. Sarah Mitchell** - Healthcare Workflow Optimization (reduced doc time by 65%)
+• **NuroScript AI Team** - Ambient Dictation Specialists (eliminated evening work)
+• **TechMed Solutions** - EHR Integration Experts
+• **Dr. James Chen** - Physician Burnout Prevention (helped 200+ doctors)
+• **HealthTech Innovations** - Practice Management Optimization
 
-🎯 **Common Healthcare Pain Points:**
-• Excessive documentation time (2-3 hours daily)
-• SOAP notes taking time away from family
-• Administrative burden and physician burnout
-• Work-life balance challenges
+🎥 **Exclusive Demo Access:**
+• Live NuroScript ambient dictation demonstration
+• Case studies: doctors who got their evenings back
+• ROI calculator for practice efficiency improvements
+• Integration roadmap with your current EHR system
 
-💡 **Potential Solutions I Can Connect You With:**
-• **Dr. Sarah Mitchell** - Healthcare Workflow Optimization Specialist
-• **TechMed Solutions** - Medical Documentation Automation
-• **NuroScript Team** - Ambient Dictation Technology Experts
-• **Dr. James Chen** - Physician Burnout Prevention Consultant
+📊 **Medical Industry Insights:**
+• 78% of practices using ambient AI see immediate improvement
+• Average 60-70% reduction in documentation time
+• $125,000 annual savings per physician in productivity gains
+• Patient satisfaction increases by 45% with more face-time
 
-🔐 **Want to see how NuroScript can solve this exact problem?**
-**Login** to access:
-• Live demo of ambient dictation technology
-• Case studies showing 60-70% documentation time reduction
-• Direct contact with healthcare technology specialists
-• Video testimonials from physicians who got their evenings back
+✅ **Advanced Draft Generated:**
+Your editable medical practice optimization plan includes specific technology recommendations, implementation timeline, and detailed cost-benefit analysis.`;
+        } else {
+          aiResponse = `🚀 **Premium Business Consultation Analysis:**
 
-**Ready to transform your practice and reclaim your personal time?**`;
-      } else if (userInput.includes('tech') || userInput.includes('software') || userInput.includes('app') || userInput.includes('saas')) {
-        aiResponse = `For your tech business, I've analyzed these critical pain points:
+**Comprehensive Business Intelligence Report:**
 
-🎯 **Main Pain Points:**
-• User acquisition and retention
-• Product-market fit validation
-• Scaling technical infrastructure
-• Competitive differentiation
+🎯 **Advanced Business Analysis:**
+• Market positioning assessment
+• Competitive landscape analysis
+• Revenue optimization opportunities
+• Operational efficiency improvements
+• Growth strategy recommendations
 
-💡 **Potential Clients I Can Connect You With:**
-• **Rachel Green** - Product-Market Fit Consultant
-• **Tom Wilson** - DevOps and Scaling Expert
-• **Nina Patel** - User Growth Strategist
-• **James Brown** - Competitive Analysis Specialist
+💡 **Expert Network Access:**
+• Industry-specific consultants
+• Verified business advisors
+• Technology implementation specialists
+• Financial optimization experts
+• Strategic planning professionals
 
-🔐 **Ready to connect with these experts?**
-**Login** to access their contact information, case studies, and book consultations. These professionals have helped similar businesses scale efficiently!
+📊 **Premium Market Data:**
+• Real-time industry trends
+• Competitor performance metrics
+• Market opportunity analysis
+• Customer behavior insights
+• Revenue forecasting models
 
-What's your biggest challenge right now?`;
-      } else {
-        // Generic response for non-authenticated users
-        aiResponse = `I can help you identify business challenges and connect you with the right professionals!
+✅ **Editable Business Plan Created:**
+Your comprehensive business strategy document is ready for customization. Includes detailed implementation roadmap, budget planning, and success metrics.
 
-🎯 **Common Business Pain Points I Help With:**
-• Operations inefficiency
-• Customer acquisition challenges
-• Technology implementation
-• Staff management issues
-• Financial optimization
+🎯 **Exclusive Features:**
+• Direct access to verified consultants
+• Advanced analytics and reporting
+• Personalized recommendation engine
+• Priority support and consultation
 
-💡 **How I Can Help:**
-• Analyze your specific business situation
-• Identify key pain points and opportunities
-• Connect you with verified industry experts
-• Provide implementation roadmaps
+Ready to transform your business with expert guidance?`;
+        }
 
-🔐 **Want personalized analysis and expert connections?**
-**Please login** to access:
-• Detailed business analysis
-• Direct contact with specialists
-• Custom solution recommendations
-• Case studies and success stories
+        const aiMessage: Message = { 
+          role: 'assistant', 
+          content: aiResponse,
+          draft: draft
+        };
+        
+        setMessages(prev => [...prev, aiMessage]);
+        setIsCreatingRequest(false);
+      }, 2000);
+      return;
+    }
 
-What specific business challenge would you like help with?`;
-      }
+    // For non-authenticated users - generate editable draft
+    setIsCreatingRequest(true);
+    
+      setTimeout(() => {
+      const draft = generateDraft(originalInput);
+      
+      const aiResponse = `I've analyzed your business challenge and created a detailed project proposal for you. 
 
-      const aiMessage: Message = { role: 'assistant', content: aiResponse };
+**Here's what I found:**
+Based on your input, I've identified key pain points and created a comprehensive solution approach that addresses your specific needs.
+
+🎯 **Click the draft below to review and edit the details:**`;
+
+      const aiMessage: Message = { 
+          role: 'assistant', 
+        content: aiResponse,
+        draft: draft
+      };
+      
       setMessages(prev => [...prev, aiMessage]);
-    }, 1000);
+      setIsCreatingRequest(false);
+    }, 2000);
+  };
+
+  const handleEditDraft = (draft: any) => {
+    setEditingDraft({ ...draft });
+    setEditDialogOpen(true);
+  };
+
+  const handleSaveDraft = () => {
+    // For non-authenticated users, redirect to login
+    if (!isAuthenticated) {
+      navigate('/login?message=Please login to save changes and contact our experts&redirect=chat-salesman');
+      setEditDialogOpen(false);
+      return;
+    }
+    
+    if (!editingDraft) return;
+
+    // Generate unique ID for the draft
+    const draftId = Date.now().toString();
+    const timestamp = new Date().toISOString();
+    
+    // Determine category based on draft content
+    const lowerContent = editingDraft.content.toLowerCase();
+    let category = 'General';
+    if (lowerContent.includes('ecommerce') || lowerContent.includes('e-commerce') || lowerContent.includes('online store')) {
+      category = 'E-commerce';
+    } else if (lowerContent.includes('medical') || lowerContent.includes('doctor') || lowerContent.includes('healthcare')) {
+      category = 'Medical';
+    } else if (lowerContent.includes('restaurant') || lowerContent.includes('food') || lowerContent.includes('cafe')) {
+      category = 'Restaurant';
+    } else if (lowerContent.includes('tech') || lowerContent.includes('software') || lowerContent.includes('app')) {
+      category = 'Tech';
+    }
+
+    // Create draft object
+    const draftToSave = {
+      id: draftId,
+      title: editingDraft.title,
+      content: editingDraft.content,
+      budget: editingDraft.budget,
+      timeline: editingDraft.timeline,
+      category: category,
+      createdAt: timestamp,
+      updatedAt: timestamp,
+    };
+
+    // Save to localStorage
+    try {
+      const existingDrafts = localStorage.getItem('reversale-drafts');
+      const drafts = existingDrafts ? JSON.parse(existingDrafts) : [];
+      drafts.push(draftToSave);
+      localStorage.setItem('reversale-drafts', JSON.stringify(drafts));
+      
+      // Show success message
+      alert('Draft saved successfully! You can find it in the Drafts section.');
+      
+      // Update the message with updated draft
+      setMessages(prev => prev.map(msg => 
+        msg.draft ? { ...msg, draft: editingDraft } : msg
+      ));
+      
+    } catch (error) {
+      console.error('Error saving draft:', error);
+      alert('Error saving draft. Please try again.');
+    }
+    
+    setEditDialogOpen(false);
+  };
+
+  const handleSendToSalesman = async () => {
+    if (!editingDraft) return;
+    
+    // For non-authenticated users, redirect to login
+    if (!isAuthenticated) {
+      navigate('/login?message=Please login to connect with our experts&redirect=chat-salesman');
+      setEditDialogOpen(false);
+      return;
+    }
+    
+    // Create draft object to pass to chat-salesman
+    // Determine category based on draft content
+    const lowerContent = editingDraft.content.toLowerCase();
+    let category = 'General';
+    if (lowerContent.includes('ecommerce') || lowerContent.includes('e-commerce') || lowerContent.includes('online store')) {
+      category = 'E-commerce';
+    } else if (lowerContent.includes('medical') || lowerContent.includes('doctor') || lowerContent.includes('healthcare')) {
+      category = 'Medical';
+    } else if (lowerContent.includes('restaurant') || lowerContent.includes('food') || lowerContent.includes('cafe')) {
+      category = 'Restaurant';
+    } else if (lowerContent.includes('tech') || lowerContent.includes('software') || lowerContent.includes('app')) {
+      category = 'Tech';
+    }
+    
+    const draftToPass = {
+      id: Date.now().toString(),
+      title: editingDraft.title,
+      content: editingDraft.content,
+      budget: editingDraft.budget,
+      timeline: editingDraft.timeline,
+      category: category,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    
+    try {
+      // First try to send email
+      const emailData = {
+        to: 'sales@reversale.com',
+        subject: `New Project Inquiry: ${editingDraft.title}`,
+        html: `
+          <h2>New Project Inquiry</h2>
+          <h3>${editingDraft.title}</h3>
+          
+          <div style="margin: 20px 0;">
+            <strong>Project Details:</strong>
+            <div style="white-space: pre-line; margin-top: 10px; padding: 15px; background: #f8f9fa; border-radius: 5px;">
+              ${editingDraft.content}
+            </div>
+          </div>
+          
+          <div style="display: flex; gap: 30px; margin: 20px 0;">
+            <div>
+              <strong>Budget:</strong> ${editingDraft.budget}
+            </div>
+            <div>
+              <strong>Timeline:</strong> ${editingDraft.timeline}
+            </div>
+          </div>
+          
+          <p>Please contact this client to discuss their project requirements.</p>
+        `
+      };
+
+      const response = await fetch('/api/send-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(emailData)
+      });
+
+      if (response.ok) {
+        // Email sent successfully, also navigate to chat with draft data
+        navigate('/chat-salesman', { state: { draft: draftToPass } });
+        alert('Connecting you with our sales expert...');
+      } else {
+        // Email failed, still navigate to chat with draft data
+        navigate('/chat-salesman', { state: { draft: draftToPass } });
+        alert('Connecting you with our sales expert...');
+      }
+    } catch (error) {
+      console.log('Email service not available, redirecting to chat with draft data...');
+      // Always navigate to chat with draft data
+      navigate('/chat-salesman', { state: { draft: draftToPass } });
+      alert('Connecting you with our sales expert...');
+    }
+    
+    setEditDialogOpen(false);
+  };
+
+  const handleSendViaEmail = async () => {
+    if (!editingDraft) return;
+    
+    // For non-authenticated users, redirect to login
+    if (!isAuthenticated) {
+      navigate('/login?message=Please login to send via email&redirect=chat-salesman');
+      setEditDialogOpen(false);
+      return;
+    }
+    
+    try {
+      // Create email content for user's email client
+      const subject = encodeURIComponent(`Project Inquiry: ${editingDraft.title}`);
+      const body = encodeURIComponent(`
+Project Title: ${editingDraft.title}
+
+Project Details:
+${editingDraft.content}
+
+Budget Range: ${editingDraft.budget}
+Timeline: ${editingDraft.timeline}
+
+Please contact me to discuss this project further.
+
+Best regards,
+[Your Name]
+[Your Contact Information]
+      `);
+      
+      // Open user's default email client
+      const mailto = `mailto:sales@reversale.com?subject=${subject}&body=${body}`;
+      window.open(mailto, '_blank');
+      
+      // Show confirmation message
+      alert('Email client opened! Please send the email from your email application.');
+      
+    } catch (error) {
+      console.error('Error opening email client:', error);
+      alert('Unable to open email client. Please manually send an email to sales@reversale.com');
+    }
+    
+    setEditDialogOpen(false);
   };
 
   const startRecording = async () => {
@@ -368,18 +987,10 @@ What specific business challenge would you like help with?`;
   if (!isAuthenticated) {
     return (
       <Box sx={{ 
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        height: '100vh',
-        width: '100vw',
+        minHeight: '100vh',
         display: 'flex', 
         flexDirection: 'column',
         bgcolor: '#ffffff',
-        zIndex: 9999,
-        overflow: 'hidden'
       }}>
         {/* Top Navigation Bar */}
         <Box sx={{
@@ -390,8 +1001,9 @@ What specific business challenge would you like help with?`;
           py: 2,
           borderBottom: '1px solid #f0f0f0',
           bgcolor: '#ffffff',
-          position: 'relative',
-          zIndex: 10000
+          position: 'sticky',
+          top: 0,
+          zIndex: 100
         }}>
           {/* Logo */}
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -449,17 +1061,22 @@ What specific business challenge would you like help with?`;
           </Box>
         </Box>
 
-        {/* Main Landing Content */}
+        {/* Main Content Container */}
         <Box sx={{
           flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'auto'
+        }}>
+          {/* Central Content Area */}
+          <Box sx={{
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
           px: 3,
           py: 6,
-          bgcolor: '#ffffff',
-          position: 'relative'
+            flex: messages.length === 0 ? 1 : 0
         }}>
           {/* Microphone Button */}
           <Box sx={{ mb: 4 }}>
@@ -514,14 +1131,14 @@ What specific business challenge would you like help with?`;
               color: '#000',
               textAlign: 'center',
               mb: 3,
-              fontSize: { xs: '2rem', md: '2rem' },
+              fontSize: { xs: '1.8rem', md: '2rem' },
               fontFamily: 'Inter, sans-serif'
             }}
           >
-            What's the pinpoint in your business operations today?
+            How can I help you today - solve business challenges or find the right platform?
           </Typography>
 
-          {/* Placeholder Input */}
+            {/* Input Area - Directly under headline */}
           <Box sx={{
             width: '100%',
             maxWidth: '600px',
@@ -533,7 +1150,6 @@ What specific business challenge would you like help with?`;
             display: 'flex',
             alignItems: 'center',
             gap: 2,
-            position: 'relative',
             boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
             '&:hover': {
               boxShadow: '0 6px 25px rgba(116, 66, 191, 0.15)',
@@ -691,28 +1307,22 @@ What specific business challenge would you like help with?`;
                 />
               </MenuItem>
             </Menu>
+            </Box>
           </Box>
 
-          {/* Chat Messages for Landing Page */}
+          {/* Chat Messages */}
           {messages.length > 0 && (
-            <Container 
-              maxWidth={false}
-              sx={{ 
-                mt: 4,
-                width: '100%',
-                px: 0,
-              }}
-            >
               <Box sx={{ 
-                overflow: 'auto', 
-                px: 1
+              flex: 1,
+              px: 3,
+              pb: 4,
+              overflow: 'auto'
               }}>
                 {messages.map((message, index) => (
+                <Box key={index} sx={{ mb: 3 }}>
                   <Paper
-                    key={index}
                     sx={{
                       p: 3,
-                      mb: 3,
                       maxWidth: '75%',
                       ml: message.role === 'user' ? 'auto' : 0,
                       bgcolor: message.role === 'user' ? '#7442BF' : 'white',
@@ -724,15 +1334,252 @@ What specific business challenge would you like help with?`;
                       border: message.role === 'user' ? 'none' : '1px solid #e9ecef'
                     }}
                   >
-                    <Typography sx={{ fontSize: '1rem', lineHeight: 1.5 }}>
+                    <Typography sx={{ fontSize: '1rem', lineHeight: 1.5, whiteSpace: 'pre-line' }}>
                       {message.content}
                     </Typography>
                   </Paper>
+                  
+                  {/* Draft Card */}
+                  {message.draft && (
+                    <Paper
+                      onClick={() => {
+                        console.log('Draft clicked!', message.draft); // Debug log
+                        handleEditDraft(message.draft);
+                      }}
+                      sx={{
+                        mt: 2,
+                        p: 3,
+                        maxWidth: '75%',
+                        cursor: 'pointer',
+                        border: '2px dashed #7442BF',
+                        borderRadius: 3,
+                        bgcolor: 'rgba(116, 66, 191, 0.02)',
+                        transition: 'all 0.3s ease',
+                        '&:hover': {
+                          borderColor: '#5e3399',
+                          bgcolor: 'rgba(116, 66, 191, 0.05)',
+                          transform: 'translateY(-2px)',
+                          boxShadow: '0 8px 25px rgba(116, 66, 191, 0.15)',
+                        }
+                      }}
+                    >
+                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                        <EditIcon sx={{ color: '#7442BF', mr: 1 }} />
+                        <Typography variant="h6" sx={{ color: '#7442BF', fontWeight: 600 }}>
+                          {message.draft.title}
+                        </Typography>
+                      </Box>
+                      
+                      <Typography 
+                        variant="body2" 
+                        sx={{ 
+                          color: '#666', 
+                          mb: 2,
+                          display: '-webkit-box',
+                          WebkitLineClamp: 3,
+                          WebkitBoxOrient: 'vertical',
+                          overflow: 'hidden',
+                        }}
+                      >
+                        {message.draft.content.replace(/\*\*/g, '').substring(0, 200)}...
+                      </Typography>
+                      
+                      <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
+                        <Box>
+                          <Typography variant="caption" sx={{ color: '#888', display: 'block' }}>
+                            Budget
+                          </Typography>
+                          <Typography variant="body2" sx={{ color: '#7442BF', fontWeight: 600 }}>
+                            {message.draft.budget}
+                          </Typography>
+                        </Box>
+                        <Box>
+                          <Typography variant="caption" sx={{ color: '#888', display: 'block' }}>
+                            Timeline
+                          </Typography>
+                          <Typography variant="body2" sx={{ color: '#7442BF', fontWeight: 600 }}>
+                            {message.draft.timeline}
+                          </Typography>
+                        </Box>
+                      </Box>
+                      
+                      <Typography 
+                        variant="body2" 
+                        sx={{ 
+                          mt: 2, 
+                          color: '#7442BF', 
+                          fontWeight: 500,
+                          display: 'flex',
+                          alignItems: 'center',
+                        }}
+                      >
+                        <EditIcon sx={{ fontSize: 16, mr: 0.5 }} />
+                        Click to review and edit details
+                      </Typography>
+                    </Paper>
+                  )}
+                  
+                  {/* Product Card for non-authenticated users */}
+                  {message.product && (
+                    <Box sx={{ mt: 2, maxWidth: '75%' }}>
+                      <ProductCard 
+                        product={message.product}
+                        onContactSales={() => {
+                          alert('Please log in to contact our sales team and get detailed consultation for this product.');
+                        }}
+                        onViewDetails={() => {
+                          alert('Please log in to view detailed product information and access demo links.');
+                        }}
+                      />
+                    </Box>
+                  )}
+                </Box>
                 ))}
               </Box>
-            </Container>
           )}
         </Box>
+
+        {/* Draft Edit Dialog */}
+        <Dialog
+          open={editDialogOpen}
+          onClose={() => setEditDialogOpen(false)}
+          maxWidth="md"
+          fullWidth
+          PaperProps={{
+            sx: {
+              borderRadius: 3,
+              maxHeight: '90vh'
+            }
+          }}
+        >
+          <DialogTitle sx={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center',
+            borderBottom: '1px solid #e9ecef',
+            pb: 2
+          }}>
+            <Typography variant="h6" sx={{ fontWeight: 600, color: '#7442BF' }}>
+              Edit Project Proposal
+            </Typography>
+            <IconButton onClick={() => setEditDialogOpen(false)}>
+              <CloseIcon />
+            </IconButton>
+          </DialogTitle>
+          
+          <DialogContent sx={{ p: 3 }}>
+            {editingDraft && (
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                <TextField
+                  label="Project Title"
+                  value={editingDraft.title}
+                  onChange={(e) => setEditingDraft({...editingDraft, title: e.target.value})}
+                  fullWidth
+                  variant="outlined"
+                />
+                
+                <TextField
+                  label="Project Details"
+                  value={editingDraft.content}
+                  onChange={(e) => setEditingDraft({...editingDraft, content: e.target.value})}
+                  fullWidth
+                  multiline
+                  rows={12}
+                  variant="outlined"
+                    sx={{
+                    '& .MuiInputBase-input': {
+                      fontFamily: 'monospace',
+                      fontSize: '0.9rem',
+                      lineHeight: 1.5,
+                    }
+                  }}
+                />
+                
+                <Box sx={{ display: 'flex', gap: 2 }}>
+                  <TextField
+                    label="Budget Range"
+                    value={editingDraft.budget}
+                    onChange={(e) => setEditingDraft({...editingDraft, budget: e.target.value})}
+                    sx={{ flex: 1 }}
+                    variant="outlined"
+                  />
+                  
+                  <TextField
+                    label="Timeline"
+                    value={editingDraft.timeline}
+                    onChange={(e) => setEditingDraft({...editingDraft, timeline: e.target.value})}
+                    sx={{ flex: 1 }}
+                    variant="outlined"
+                  />
+              </Box>
+              </Box>
+            )}
+          </DialogContent>
+          
+          <DialogActions sx={{ p: 3, borderTop: '1px solid #e9ecef', gap: 2 }}>
+            <Button
+              onClick={() => setEditDialogOpen(false)}
+              variant="outlined"
+              sx={{
+                borderColor: '#ddd',
+                color: '#666',
+                '&:hover': {
+                  borderColor: '#bbb',
+                  bgcolor: '#f5f5f5'
+                }
+              }}
+            >
+              Cancel
+            </Button>
+            
+            <Button
+              onClick={handleSaveDraft}
+              variant="outlined"
+              startIcon={<SaveIcon />}
+              sx={{
+                borderColor: '#7442BF',
+                color: '#7442BF',
+                '&:hover': {
+                  borderColor: '#5e3399',
+                  bgcolor: 'rgba(116, 66, 191, 0.05)'
+                }
+              }}
+            >
+              {isAuthenticated ? 'Save Changes' : 'Login to Our Salesman'}
+            </Button>
+            
+            <Button
+              onClick={handleSendViaEmail}
+              variant="outlined"
+              startIcon={<SendIcon />}
+              sx={{
+                borderColor: '#2196F3',
+                color: '#2196F3',
+                '&:hover': {
+                  borderColor: '#1976D2',
+                  bgcolor: 'rgba(33, 150, 243, 0.05)'
+                }
+              }}
+            >
+              {isAuthenticated ? 'Send via Email' : 'Login to Send Email'}
+            </Button>
+            
+            <Button
+              onClick={handleSendToSalesman}
+              variant="contained"
+              startIcon={<SendIcon />}
+              sx={{
+                bgcolor: '#7442BF',
+                color: 'white',
+                '&:hover': {
+                  bgcolor: '#5e3399'
+                }
+              }}
+            >
+              {isAuthenticated ? 'Send to Our Experts' : 'Login to Contact Experts'}
+            </Button>
+          </DialogActions>
+        </Dialog>
       </Box>
     );
   }
@@ -751,6 +1598,16 @@ What specific business challenge would you like help with?`;
         py: 6,
         bgcolor: '#ffffff',
         position: 'relative'
+      }}>
+        {/* Central Content Area */}
+        <Box sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          px: 3,
+          py: 6,
+          flex: messages.length === 0 ? 1 : 0
       }}>
         {/* Microphone Button */}
         <Box sx={{ mb: 4 }}>
@@ -805,14 +1662,14 @@ What specific business challenge would you like help with?`;
             color: '#000',
             textAlign: 'center',
             mb: 3,
-            fontSize: { xs: '2rem', md: '2rem' },
+            fontSize: { xs: '1.8rem', md: '2rem' },
             fontFamily: 'Inter, sans-serif'
           }}
         >
-          What's the pinpoint in your business operations today?
+            How can I help you today - solve business challenges or find the right platform?
         </Typography>
 
-        {/* Input Field */}
+          {/* Input Area - Directly under headline */}
         <Box sx={{
           width: '100%',
           maxWidth: '600px',
@@ -824,7 +1681,6 @@ What specific business challenge would you like help with?`;
           display: 'flex',
           alignItems: 'center',
           gap: 2,
-          position: 'relative',
           boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
           '&:hover': {
             boxShadow: '0 6px 25px rgba(116, 66, 191, 0.15)',
@@ -982,6 +1838,7 @@ What specific business challenge would you like help with?`;
               />
             </MenuItem>
           </Menu>
+          </Box>
         </Box>
 
         {/* Chat Messages for Authenticated Users */}
@@ -999,11 +1856,10 @@ What specific business challenge would you like help with?`;
               px: 1
             }}>
               {messages.map((message, index) => (
+                <Box key={index} sx={{ mb: 3 }}>
                 <Paper
-                  key={index}
                   sx={{
                     p: 3,
-                    mb: 3,
                     maxWidth: '75%',
                     ml: message.role === 'user' ? 'auto' : 0,
                     bgcolor: message.role === 'user' ? '#7442BF' : 'white',
@@ -1015,15 +1871,253 @@ What specific business challenge would you like help with?`;
                     border: message.role === 'user' ? 'none' : '1px solid #e9ecef'
                   }}
                 >
-                  <Typography sx={{ fontSize: '1rem', lineHeight: 1.5 }}>
+                    <Typography sx={{ fontSize: '1rem', lineHeight: 1.5, whiteSpace: 'pre-line' }}>
                     {message.content}
                   </Typography>
                 </Paper>
+                  
+                  {/* Draft Card for Authenticated Users */}
+                  {message.draft && (
+                    <Paper
+                      onClick={() => {
+                        console.log('Draft clicked!', message.draft); // Debug log
+                        handleEditDraft(message.draft);
+                      }}
+                      sx={{
+                        mt: 2,
+                        p: 3,
+                        maxWidth: '75%',
+                        cursor: 'pointer',
+                        border: '2px dashed #7442BF',
+                        borderRadius: 3,
+                        bgcolor: 'rgba(116, 66, 191, 0.02)',
+                        transition: 'all 0.3s ease',
+                        '&:hover': {
+                          borderColor: '#5e3399',
+                          bgcolor: 'rgba(116, 66, 191, 0.05)',
+                          transform: 'translateY(-2px)',
+                          boxShadow: '0 8px 25px rgba(116, 66, 191, 0.15)',
+                        }
+                      }}
+                    >
+                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                        <EditIcon sx={{ color: '#7442BF', mr: 1 }} />
+                        <Typography variant="h6" sx={{ color: '#7442BF', fontWeight: 600 }}>
+                          {message.draft.title}
+                        </Typography>
+                      </Box>
+                      
+                      <Typography 
+                        variant="body2" 
+                        sx={{ 
+                          color: '#666', 
+                          mb: 2,
+                          display: '-webkit-box',
+                          WebkitLineClamp: 3,
+                          WebkitBoxOrient: 'vertical',
+                          overflow: 'hidden',
+                        }}
+                      >
+                        {message.draft.content.replace(/\*\*/g, '').substring(0, 200)}...
+                      </Typography>
+                      
+                      <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
+                        <Box>
+                          <Typography variant="caption" sx={{ color: '#888', display: 'block' }}>
+                            Budget
+                          </Typography>
+                          <Typography variant="body2" sx={{ color: '#7442BF', fontWeight: 600 }}>
+                            {message.draft.budget}
+                          </Typography>
+                        </Box>
+                        <Box>
+                          <Typography variant="caption" sx={{ color: '#888', display: 'block' }}>
+                            Timeline
+                          </Typography>
+                          <Typography variant="body2" sx={{ color: '#7442BF', fontWeight: 600 }}>
+                            {message.draft.timeline}
+                          </Typography>
+                        </Box>
+                      </Box>
+                      
+                      <Typography 
+                        variant="body2" 
+                        sx={{ 
+                          mt: 2, 
+                          color: '#7442BF', 
+                          fontWeight: 500,
+                          display: 'flex',
+                          alignItems: 'center',
+                        }}
+                      >
+                        <EditIcon sx={{ fontSize: 16, mr: 0.5 }} />
+                        Click to review and edit details
+                      </Typography>
+                    </Paper>
+                  )}
+                  
+                  {/* Product Card for non-authenticated users */}
+                  {message.product && (
+                    <Box sx={{ mt: 2, maxWidth: '75%' }}>
+                      <ProductCard 
+                        product={message.product}
+                        onContactSales={() => {
+                          alert('Please log in to contact our sales team and get detailed consultation for this product.');
+                        }}
+                        onViewDetails={() => {
+                          alert('Please log in to view detailed product information and access demo links.');
+                        }}
+                      />
+                    </Box>
+                  )}
+                </Box>
               ))}
             </Box>
           </Container>
         )}
       </Box>
+
+      {/* Draft Edit Dialog for Authenticated Users */}
+      <Dialog
+        open={editDialogOpen}
+        onClose={() => setEditDialogOpen(false)}
+        maxWidth="md"
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: 3,
+            maxHeight: '90vh'
+          }
+        }}
+      >
+        <DialogTitle sx={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center',
+          borderBottom: '1px solid #e9ecef',
+          pb: 2
+        }}>
+          <Typography variant="h6" sx={{ fontWeight: 600, color: '#7442BF' }}>
+            Edit Project Proposal
+          </Typography>
+          <IconButton onClick={() => setEditDialogOpen(false)}>
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        
+        <DialogContent sx={{ p: 3 }}>
+          {editingDraft && (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+              <TextField
+                label="Project Title"
+                value={editingDraft.title}
+                onChange={(e) => setEditingDraft({...editingDraft, title: e.target.value})}
+                fullWidth
+                variant="outlined"
+              />
+              
+              <TextField
+                label="Project Details"
+                value={editingDraft.content}
+                onChange={(e) => setEditingDraft({...editingDraft, content: e.target.value})}
+                fullWidth
+                multiline
+                rows={12}
+                variant="outlined"
+                sx={{
+                  '& .MuiInputBase-input': {
+                    fontFamily: 'monospace',
+                    fontSize: '0.9rem',
+                    lineHeight: 1.5,
+                  }
+                }}
+              />
+              
+              <Box sx={{ display: 'flex', gap: 2 }}>
+                <TextField
+                  label="Budget Range"
+                  value={editingDraft.budget}
+                  onChange={(e) => setEditingDraft({...editingDraft, budget: e.target.value})}
+                  sx={{ flex: 1 }}
+                  variant="outlined"
+                />
+                
+                <TextField
+                  label="Timeline"
+                  value={editingDraft.timeline}
+                  onChange={(e) => setEditingDraft({...editingDraft, timeline: e.target.value})}
+                  sx={{ flex: 1 }}
+                  variant="outlined"
+                />
+              </Box>
+            </Box>
+          )}
+        </DialogContent>
+        
+        <DialogActions sx={{ p: 3, borderTop: '1px solid #e9ecef', gap: 2 }}>
+          <Button
+            onClick={() => setEditDialogOpen(false)}
+            variant="outlined"
+            sx={{
+              borderColor: '#ddd',
+              color: '#666',
+              '&:hover': {
+                borderColor: '#bbb',
+                bgcolor: '#f5f5f5'
+              }
+            }}
+          >
+            Cancel
+          </Button>
+          
+          <Button
+            onClick={handleSaveDraft}
+            variant="outlined"
+            startIcon={<SaveIcon />}
+            sx={{
+              borderColor: '#7442BF',
+              color: '#7442BF',
+              '&:hover': {
+                borderColor: '#5e3399',
+                bgcolor: 'rgba(116, 66, 191, 0.05)'
+              }
+            }}
+          >
+            Save Changes
+          </Button>
+          
+          <Button
+            onClick={handleSendViaEmail}
+            variant="outlined"
+            startIcon={<SendIcon />}
+            sx={{
+              borderColor: '#2196F3',
+              color: '#2196F3',
+              '&:hover': {
+                borderColor: '#1976D2',
+                bgcolor: 'rgba(33, 150, 243, 0.05)'
+              }
+            }}
+          >
+            Send via Email
+          </Button>
+          
+          <Button
+            onClick={handleSendToSalesman}
+            variant="contained"
+            startIcon={<SendIcon />}
+            sx={{
+              bgcolor: '#7442BF',
+              color: 'white',
+              '&:hover': {
+                bgcolor: '#5e3399'
+              }
+            }}
+          >
+            Send to Our Experts
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

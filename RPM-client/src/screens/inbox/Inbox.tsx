@@ -154,7 +154,7 @@ const Inbox: React.FC = () => {
       <Paper sx={{ 
         p: 4, 
         mb: 4, 
-        background: '#000000', 
+        background: 'linear-gradient(135deg, #7442BF, #9b4bf2)', 
         color: 'white' 
       }}>
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>

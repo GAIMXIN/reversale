@@ -25,7 +25,7 @@ import {
   Settings as SettingsIcon,
   Logout as LogoutIcon,
   Build as ToolsIcon,
-  Email as EmailIcon,
+  Chat as ChatIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
 import logo from '../assests/img/logo.png';
@@ -35,12 +35,12 @@ const HEADER_HEIGHT = 64; // Standard AppBar height
 
 // Reorganized sidebar items with new order and grouping
 const sidebarGroups = [
-  // Group 1: Dashboard, Inbox & Outreach
+  // Group 1: Dashboard, Inbox & Chat
   {
     items: [
       { path: '/sales/dashboard', label: 'Dashboard', icon: <DashboardIcon /> },
       { path: '/sales/inbox', label: 'Inbox', icon: <InboxIcon /> },
-      { path: '/sales/outreach/email-sender', label: 'Outreach', icon: <EmailIcon /> },
+      { path: '/sales/leads/deals-chat', label: 'Live Chat', icon: <ChatIcon /> },
     ]
   },
   // Group 2: Leads & Deals

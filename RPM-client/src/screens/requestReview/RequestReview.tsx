@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -13,6 +13,7 @@ import {
   Tooltip,
   CircularProgress,
   Alert,
+  Fade,
 } from '@mui/material';
 import {
   ArrowBack as ArrowBackIcon,
@@ -22,7 +23,7 @@ import {
   Send as SendIcon,
   Edit as EditIcon,
   Save as SaveIcon,
-  Cancel as CancelIcon,
+  CloudDone as CloudDoneIcon,
 } from '@mui/icons-material';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
@@ -51,8 +52,13 @@ const RequestReview: React.FC = () => {
   const [editedTitle, setEditedTitle] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [sidebarWidth, setSidebarWidth] = useState(260);
-  const [isConfirmed, setIsConfirmed] = useState(false);
   const [documentStatus, setDocumentStatus] = useState<'draft' | 'confirmed' | 'sent' | 'processing' | 'completed'>('draft');
+  
+  // Auto-save related states
+  const [isAutoSaving, setIsAutoSaving] = useState(false);
+  const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const [showSavedIndicator, setShowSavedIndicator] = useState(false);
+  const autoSaveTimeout = useRef<NodeJS.Timeout | null>(null);
 
   // Initialize editor with the request summary content
   const editor = useEditor({
@@ -68,16 +74,53 @@ const RequestReview: React.FC = () => {
         class: 'prose prose-lg max-w-none focus:outline-none min-h-[500px] p-6',
       },
     },
+    onUpdate: ({ editor }) => {
+      // Trigger auto-save on content change for draft status
+      if (documentStatus === 'draft') {
+        handleAutoSave();
+      }
+    },
   });
+
+  // Auto-save function
+  const handleAutoSave = () => {
+    if (autoSaveTimeout.current) {
+      clearTimeout(autoSaveTimeout.current);
+    }
+
+    autoSaveTimeout.current = setTimeout(() => {
+      setIsAutoSaving(true);
+      
+      // Simulate save operation
+      setTimeout(() => {
+        setIsAutoSaving(false);
+        setLastSaved(new Date());
+        setShowSavedIndicator(true);
+        
+        // Hide the saved indicator after 2 seconds
+        setTimeout(() => {
+          setShowSavedIndicator(false);
+        }, 2000);
+      }, 500);
+    }, 1000); // Auto-save after 1 second of inactivity
+  };
 
   useEffect(() => {
     if (currentRequest && editor) {
       editor.commands.setContent(generateMarkdownContent(currentRequest));
       setEditedTitle(currentRequest.title);
       setDocumentStatus(currentRequest.status);
-      setIsConfirmed(currentRequest.status !== 'draft');
     }
   }, [currentRequest, editor]);
+
+  // Cleanup auto-save timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (autoSaveTimeout.current) {
+        clearTimeout(autoSaveTimeout.current);
+      }
+    };
+  }, []);
 
   // Load request by ID if not in currentRequest
   useEffect(() => {
@@ -104,40 +147,22 @@ const RequestReview: React.FC = () => {
   }, [currentRequest]);
 
   const handleBack = () => {
-    navigate('/chat');
-  };
-
-  const handleConfirm = () => {
-    setIsConfirmed(true);
-    setDocumentStatus('confirmed');
-    
-    if (currentRequest) {
-      updateRequestStatus(currentRequest.id, 'confirmed');
+    // If editing a draft, return to drafts page
+    if (documentStatus === 'draft') {
+      navigate('/posts/status/draft');
+    } else {
+      // For sent posts, return to appropriate status page
+      const statusPages = {
+        'sent': '/posts/status/sent',
+        'confirmed': '/posts/status/sent',
+        'processing': '/posts/status/ongoing',
+        'completed': '/posts/status/completed',
+      };
+      navigate(statusPages[documentStatus] || '/posts/status/draft');
     }
-    
-    // Add a confirmation message to chat
-    const confirmMessage: ChatMessage = {
-      id: Date.now().toString(),
-      content: "Document confirmed! You can now send it out for processing or make further edits.",
-      sender: 'assistant',
-      timestamp: new Date(),
-    };
-    setChatMessages(prev => [...prev, confirmMessage]);
   };
 
   const handleSendOut = async () => {
-    if (!isConfirmed) {
-      // Add warning message to chat
-      const warningMessage: ChatMessage = {
-        id: Date.now().toString(),
-        content: "Please confirm the document first before sending it out.",
-        sender: 'assistant',
-        timestamp: new Date(),
-      };
-      setChatMessages(prev => [...prev, warningMessage]);
-      return;
-    }
-
     setDocumentStatus('sent');
     setIsSending(true);
 
@@ -175,11 +200,11 @@ const RequestReview: React.FC = () => {
       
     } catch (error) {
       console.error('Error sending request:', error);
-      setDocumentStatus('confirmed');
+      setDocumentStatus('draft');
       setIsSending(false);
       
       if (currentRequest) {
-        updateRequestStatus(currentRequest.id, 'confirmed');
+        updateRequestStatus(currentRequest.id, 'draft');
       }
       
       const errorMessage: ChatMessage = {
@@ -189,21 +214,6 @@ const RequestReview: React.FC = () => {
         timestamp: new Date(),
       };
       setChatMessages(prev => [...prev, errorMessage]);
-    }
-  };
-
-  const handleConfirmAndPay = () => {
-    // Legacy function - kept for compatibility
-    if (currentRequest) {
-      navigate('/escrow-checkout', { 
-        state: { 
-          requestData: {
-            ...currentRequest,
-            title: editedTitle,
-            content: editor?.getHTML() || '',
-          }
-        } 
-      });
     }
   };
 
@@ -240,11 +250,10 @@ const RequestReview: React.FC = () => {
 
   const handleTitleSave = () => {
     setIsEditingTitle(false);
-  };
-
-  const handleTitleCancel = () => {
-    setEditedTitle(currentRequest?.title || '');
-    setIsEditingTitle(false);
+    // Trigger auto-save for title change
+    if (documentStatus === 'draft') {
+      handleAutoSave();
+    }
   };
 
   const handleSidebarWidthChange = (width: number) => {
@@ -339,9 +348,6 @@ const RequestReview: React.FC = () => {
                 <IconButton onClick={handleTitleSave} color="primary" size="small">
                   <SaveIcon />
                 </IconButton>
-                <IconButton onClick={handleTitleCancel} size="small">
-                  <CancelIcon />
-                </IconButton>
               </Box>
             ) : (
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -353,6 +359,35 @@ const RequestReview: React.FC = () => {
                 </IconButton>
               </Box>
             )}
+            
+            {/* Auto-save status indicator */}
+            {documentStatus === 'draft' && (
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, ml: 2 }}>
+                {isAutoSaving ? (
+                  <>
+                    <CircularProgress size={16} />
+                    <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                      Saving...
+                    </Typography>
+                  </>
+                ) : (
+                  <Fade in={showSavedIndicator} timeout={500}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                      <CloudDoneIcon sx={{ fontSize: 16, color: '#4caf50' }} />
+                      <Typography variant="caption" sx={{ color: '#4caf50' }}>
+                        Saved
+                      </Typography>
+                    </Box>
+                  </Fade>
+                )}
+                {lastSaved && !isAutoSaving && !showSavedIndicator && (
+                  <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                    Last saved: {lastSaved.toLocaleTimeString()}
+                  </Typography>
+                )}
+              </Box>
+            )}
+            
             <Chip 
               label={`$${currentRequest.estPrice.toLocaleString()}`}
               color="primary"
@@ -373,19 +408,6 @@ const RequestReview: React.FC = () => {
           
           <Box sx={{ display: 'flex', gap: 2 }}>
             {documentStatus === 'draft' && (
-              <Button
-                variant="contained"
-                onClick={handleConfirm}
-                sx={{
-                  bgcolor: '#2196F3',
-                  '&:hover': { bgcolor: '#1976D2' }
-                }}
-              >
-                Confirm
-              </Button>
-            )}
-            
-            {documentStatus === 'confirmed' && (
               <Button
                 variant="contained"
                 onClick={handleSendOut}
